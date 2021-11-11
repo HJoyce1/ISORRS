@@ -196,4 +196,22 @@ def extrap_start(a):
 #requires:vector a
     return [2*(2*a[0]-a[1])-a[0],2*a[0]-a[1]]
 #==============================================================================
+def current_density_ray2015():
+# returns a vector of values of the upward and downward currnt region with size
+# 100 taken form Ray+ 2015  
+    import numpy as np   
+    x = np.linspace(1,100,100)
+    #1 degree of upward current from 0-0.2 microA/m2
+    y1 = 0.004*x[0:50]
+    #1/2 degree of constant upward current at 0.2 microA/m2
+    y2 = np.ones(25)*0.2
+    # 1/4 degree to downward current
+    x2 = np.linspace(0,12,13)
+    y3 = -0.038*x2+0.2
+    # 1/4 degree return to 0
+    x3 = np.linspace(0,11,12)
+    y4 = 0.025*x3+y3[-1]
+    j = np.concatenate([y1,y2,y3,y4],axis=0)   
+    return j
+#==============================================================================
 # End of file
