@@ -168,6 +168,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
                 
     
     #numerically calculate differentials- central difference using roll function
+    # TODO: Better numerical algorithm than the central difference!
     # ions
     
         for m in range(1,num_ionic_species+1):
