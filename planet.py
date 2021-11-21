@@ -1,6 +1,8 @@
-# Module to read in imput arrays to model for specified planet currently
+# Module to read in input arrays to model for specified planet currently
 # Saturn and Jupiter
-# all functions are not physical or from a model, jsut functions to give a shape
+# all functions are not physical or from a model, just functions to give a 'shape'
+# TODO: Actual physical functions would be a good place to start (but at time of writing 
+# thre were no better, possibly better now with Juno data)
 
 # Returns: empty array with first row being the input values in dictionaries
 #          Dictionaries are electrons, ions and neutrals
@@ -23,7 +25,7 @@ def saturn(its,phys_consts,z,z_ext,x,ghosts):
     import numpy as np
     import pw
     
-    #constants for Saturn
+    # constants for Saturn
     radius= 5.8232e7
     mass_planet = 5.683e26 
     b0=21e-6 #magnetic field at surface
@@ -31,17 +33,17 @@ def saturn(its,phys_consts,z,z_ext,x,ghosts):
     dipole_offset=0
     g = 10.44 #graviational acceleration
     
-    #combine to read out
+    # combine to read out
     consts=[radius, mass_planet,b0,rot_period,dipole_offset,g]
     
-    #physical constants
+    # physical constants (read in)
     m_e = phys_consts[0]
     m_p = phys_consts[1]
     k_b = phys_consts[2]
     e_charge = phys_consts[3]
     gamma = phys_consts[4]
     
-    #masses of neutral and ionic species at Saturn
+    # masses of neutral and ionic species at Saturn
     m_H2 = 2*m_p
     m_He = 4*m_p
     m_H = m_p
@@ -49,13 +51,14 @@ def saturn(its,phys_consts,z,z_ext,x,ghosts):
     m_H_plus = m_p
     m_H3_plus = 3*m_p
 
-    #ghost points
+    # ghost points (read in)
+    # I'm sorry I don't remember the reason for ghost points
     gb_z = ghosts[0]
     ge_z = ghosts[1]
     gb_x = ghosts[2]
     ge_x = ghosts[3]
     
-    #prefill fixed arrays
+    # prefill fixed arrays
     A = np.empty([len(z)+4,])
     n_H2 = np.empty([len(z)+4,])
     rho_H2 = np.empty([len(z)+4,])
@@ -94,19 +97,19 @@ def saturn(its,phys_consts,z,z_ext,x,ghosts):
     #     INITIAL CONDITIONS
     #==========================================================================
     
-    #DIPOLE A
+    # DIPOLE A
     # cross sectional area A
     alp= (1/(z[0]**3)) *0.00000001 
     A[2:-2] = alp*(z**3) +0.0001
     A[0:2]=alp*(gb_z**3)+0.0001
     A[-2:]=alp*(ge_z**3)+0.0001
     
-    #Field aligned currents
+    # Field aligned currents
 #    idx = (np.abs(z - radius)).argmin() #find index of closest point to 1Rs
     FAC = 5e-10 * (A[2]/A) # 54.5-572 nAm-2 from Ray+ 2013
     
     btemp=2500
-    #Initial H+ temperature profile and hence pressure
+    #Initial H+ temperature profile and hence pressure (Log values require testing and justifying (it was a test))
     T_H_plus[2:-2,0] = 25* (x/20)**2*np.exp(-0.1*(x/20)) +btemp +200*np.log(0.001*x+1)
     T_H_plus[0,0]=btemp
     T_H_plus[1,0]=btemp
@@ -254,7 +257,7 @@ def saturn(its,phys_consts,z,z_ext,x,ghosts):
     #==========================================================================
     #     FILL DICTIONARIES
     #==========================================================================
-    
+    # Easier to deal with all the data in form of dictionaries
     # =============ions================
     #H_plus
     ions = {1:{"name":"H plus",
@@ -434,7 +437,7 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
     FAC = 1e-11 * (A[2]/A) # 1-7 microAm-1 from Ray+ 2009
     b_temp = 700
     
-    #Initial H+ temperature profile and hence pressure
+    #Initial H+ temperature profile and hence pressure (again log was a test I think so needs investigating again)
     T_H_plus[2:-2,0] = 25* (x/20)**2*np.exp(-0.1*(x/20)) +b_temp +200*np.log(0.001*x+1)
     T_H_plus[0,0]=b_temp
     T_H_plus[1,0]=b_temp

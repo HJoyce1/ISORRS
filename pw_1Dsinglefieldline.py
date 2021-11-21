@@ -29,7 +29,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     import dipolefield
     import pw
     import planet
-    import pw_plotting_tools as pwpl
+    import pw_plotting_tools as pwpl # already been incorporated?
     # ---------------------------------Start Main-------------------------------------
     planet_name = 'jupiter'
     dt = 0.01
@@ -41,7 +41,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     plots=1
     saves=0
     run_name='test'
-    #    Main folder to save plots and data to
+    #    Main folder to save plots and data to (obv change this)
     folder = '/Users/carleymartin/Desktop/polar_wind_output/'
     # ---------------------------------Grid set up-------------------------------------    
     #800 spatial grids per Rs roughly - a bit more to round the numbers
@@ -433,4 +433,9 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
                 f.write('%s,' %(ions[kk]["kappa"][2:-2,-1][jj]))
             f.write("\n")
         
-        f.close() 
+        f.close()
+
+if __name__ == "__main__":
+	import sys
+	polar_wind_outflow(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],
+					   sys.argv[6],sys.argv[7],sys.argv[8],sys.argv[9],sys.argv[10])

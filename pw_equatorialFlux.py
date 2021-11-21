@@ -1,6 +1,9 @@
 # =============================================================================
 # DISCRIPTION:Analytical model of polar wind at Saturn from equations in Glocer+ 2007
 #             now fully generalised for any number of ionic or neutral species
+#             This version plots calculates and plots out the flux that gets to the
+#			  equatorial plane.
+
 # AUTHOR: C.J.Martin
 # INSTITUTION: Lancaster University
 
@@ -31,7 +34,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,FAC_flag,CF_flag,plots,saves,run_na
     import dipolefield
     import pw
     import planet
-    #import pw_plotting_tools as pwpl
+    #import pw_plotting_tools as pwpl <-- Incorporate in now?
     # ---------------------------------Start Main-------------------------------------
     # Main folder to save plots and data to
     folder = '/Users/carleymartin/Desktop/polar_wind_output/'
@@ -461,3 +464,8 @@ def polar_wind_outflow(planet_name,dt,its,rs,FAC_flag,CF_flag,plots,saves,run_na
             if saves==1: 
                 pl.savefig(folder+'equatorial_plot_%s_%s.png' %(planet_name,run_name))
                 print('Plots saved to: %s' %folder)
+
+if __name__ == "__main__":
+	import sys
+	polar_wind_outflow(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],
+					   sys.argv[6],sys.argv[7],sys.argv[8],sys.argv[9],sys.argv[10])

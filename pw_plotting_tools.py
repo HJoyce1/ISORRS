@@ -1,7 +1,10 @@
 #Module for plotting functions to tidy code up
+# I think you will need to change some parameters depending on which planet
+# you want to plot out. I think these can replace the plotting in the
+# main functions if you want to
 
 
-#Personalised plotting function by me for me
+#Personalised plotting function by me for me just to quickly check on things
 def plot_me_quick(x,y,xlabel,ylabel,grid):
     import matplotlib.pyplot as pl
     pl.plot(x,y)
