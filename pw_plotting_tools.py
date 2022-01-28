@@ -12,6 +12,13 @@ def plot_me_quick(x,y,xlabel,ylabel,grid):
     pl.xlabel(xlabel)
     pl.grid(grid) 
     
+def plot_me_log(x,y,xlabel,ylabel,grid):
+    import matplotlib.pyplot as pl
+    pl.plot(x,y)
+    pl.ylabel(ylabel)
+    pl.xlabel(xlabel)
+    pl.yscale('log')
+    pl.grid(grid)
  
     #plot specifically for results
 def results_plot(z,num_ion,e_charge,E,ion_dict,electron_dict,ac,ag,e_flux,ion_flux):
@@ -37,11 +44,11 @@ def results_plot(z,num_ion,e_charge,E,ion_dict,electron_dict,ac,ag,e_flux,ion_fl
     plot_me_quick(z/1000,ag,'Distance Along Field Line (km)','Acceleration Terms \n(m s^-2)','on')  
         
     pl.subplot(4,2,5)
-    plot_me_quick(z/1000,e_flux[2:-2,-1],'Distance Along Field Line (km)','Electron Flux \n(m^-2 s^-1) x A (m^2) ','on')
+    plot_me_log(z/1000,e_flux[2:-2,-1],'Distance Along Field Line (km)','Electron Flux \n(m^-2 s^-1) x A (m^2) ','on')
     
     for k in range(1,num_ion+1):
         pl.subplot(4,2,k+5)
-        plot_me_quick(z/1000,ion_flux[2:-2,-1,k-1],'Distance Along Field Line (km)','%s Flux \n(m^-2 s^-1)x A (m^2)' %(ion_dict[k]["name"]),'on')
+        plot_me_log(z/1000,ion_flux[2:-2,-1,k-1],'Distance Along Field Line (km)','%s Flux \n(m^-2 s^-1)x A (m^2)' %(ion_dict[k]["name"]),'on')
     
     pl.subplots_adjust(hspace=0.5,wspace=0.5)
     pl.suptitle("Results")
