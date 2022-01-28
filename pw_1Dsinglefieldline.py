@@ -20,6 +20,11 @@
 # All in SI units unless specified
 # Part of the lancaster polar wind model
 # 2019
+
+#==============================================================================
+
+#EDITED by Hannah Joyce, Lancaster University, 2022
+
 # =============================================================================
 #EXAMPLE: polar_wind_outflow('jupiter',0.01,10000,3,16,0,0,1,0,'anything'):
 def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_name): 
@@ -28,21 +33,22 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     import matplotlib.pyplot as pl
     import dipolefield
     import pw
-    import planet
-    import pw_plotting_tools as pwpl # already been incorporated?
+    import planet_edit as planet
+    import pw_plotting_tools_editt as pwpl # already been incorporated?
     # ---------------------------------Start Main-------------------------------------
     planet_name = 'jupiter'
-    dt = 0.01
-    its=10000
-    rs = 3
-    lshell=16 #y_eq[h-1]
-    FAC_flag =0
-    CF_flag =0
-    plots=1
-    saves=0
-    run_name='test'
+    # dt = 0.01
+    # its=10000
+    # rs = 3
+    # lshell=16 #y_eq[h-1]
+    # FAC_flag =0
+    # CF_flag =0
+    # plots=1
+    # saves=0
+    # run_name='testB'
     #    Main folder to save plots and data to (obv change this)
-    folder = '/Users/carleymartin/Desktop/polar_wind_output/'
+    folder = 'H:/pw_model/test_runs/polar_wind_outputs/'
+    # folder = 'C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs/polar_wind_outputs/'
     # ---------------------------------Grid set up-------------------------------------    
     #800 spatial grids per Rs roughly - a bit more to round the numbers
     #    rs = 3 #how far out in rs do you want to go - roughly?
@@ -105,9 +111,9 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     e_flux = np.empty([len(z)+4,its])
     e_flux[:,0] = np.nan # no initial values for electron flux
     ion1_flux = np.empty([len(z)+4,its])
-    ion1_flux[:,0] = np.nan # no initial values for electron flux
+    ion1_flux[:,0] = np.nan # no initial values for ion1 flux
     ion2_flux = np.empty([len(z)+4,its])
-    ion2_flux[:,0] = np.nan # no initial values for electron flux
+    ion2_flux[:,0] = np.nan # no initial values for ion2 flux
     
     # unpack constants
     radius = consts[0]
@@ -202,7 +208,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         dEdr[-1] = np.nan
         
         #electrons
-        dAudr = (np.roll(A*electrons["u"][:,i-1],-1)-np.roll(A*electrons["u"][:,i-1],1))/(2*dz)
+        dAudr = (np.roll(A*electrons["u"][:,i-1],-1)-np.roll(A*electrons["u"][:,i-1],1))/(2*dz)#np.roll(a, shift, axis=None)
         dAudr[0] = np.nan
         dAudr[-1] = np.nan
     
@@ -292,7 +298,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     if plots ==1:
         print('Plots on screen')
     #        pl.figure(2)    
-        pwpl.results_plot(z,z_ext,radius,num_ionic_species,e_charge,E[2:-2,-1],ions,electrons,ac,ag,e_flux,ion_flux)
+        pwpl.results_plot(z,num_ionic_species,e_charge,E[2:-2,-1],ions,electrons,ac,ag,e_flux,ion_flux) # z_ext,radius removed from second and third place
         pl.savefig(folder+'overview_results_plot_%s_%s.png' %(planet_name,run_name))
     #        pl.figure(3)
         pwpl.species_plot(z,z_ext,electrons,radius)
@@ -436,7 +442,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         
         f.close()
 
-if __name__ == "__main__":
-	import sys
-	polar_wind_outflow(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],
-					   sys.argv[6],sys.argv[7],sys.argv[8],sys.argv[9],sys.argv[10])
+# if __name__ == "__main__":
+# 	import sys
+# 	polar_wind_outflow(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],
+# 					   sys.argv[6],sys.argv[7],sys.argv[8],sys.argv[9],sys.argv[10])
