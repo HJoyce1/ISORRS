@@ -136,17 +136,17 @@ def saturn(its,phys_consts,z,z_ext,x,ghosts):
     u_H3_plus[-2,0]=pw.T2v(T_H3_plus[-2,0],m_H3_plus)
         
     #initial H+ ion density - exponential decrease place holder
-    n_H_plus[2:-2,0] = 5*10**10*np.exp(-0.5*(z/z[0])) + 6*10**5
-    n_H_plus[0:2,0]=5*10**10*np.exp(-0.5*(gb_z/z[0])) + 6*10**5
-    n_H_plus[-2:,0]=5*10**10*np.exp(-0.5*(ge_z/z[0])) + 6*10**5
+    n_H_plus[2:-2,0] = 5e10*np.exp(-0.5*(z/z[0])) + 1e5 #6
+    n_H_plus[0:2,0]=5e10*np.exp(-0.5*(gb_z/z[0])) + 1e5
+    n_H_plus[-2:,0]=5e10*np.exp(-0.5*(ge_z/z[0])) + 1e5
     rho_H_plus[2:-2,0] = n_H_plus[2:-2,0] * m_H_plus
     rho_H_plus[0:2,0]=n_H_plus[0:2,0] * m_H_plus
     rho_H_plus[-2:,0]=n_H_plus[-2:,0] * m_H_plus
 
     #initial H3+ ion density - exponential decrease place holder
-    n_H3_plus[2:-2,0] = 2*10**10*np.exp(-0.4*(z/z[0])) + 10**5
-    n_H3_plus[0:2,0]=2*10**10*np.exp(-0.4*(gb_z/z[0])) + 10**5
-    n_H3_plus[-2:,0]=2*10**10*np.exp(-0.4*(ge_z/z[0])) + 10**5
+    n_H3_plus[2:-2,0] = 2*10**10*np.exp(-0.4*(z/z[0])) + 5**5 #10
+    n_H3_plus[0:2,0]=2*10**10*np.exp(-0.4*(gb_z/z[0])) + 5**5
+    n_H3_plus[-2:,0]=2*10**10*np.exp(-0.4*(ge_z/z[0])) + 5**5
     rho_H3_plus[2:-2,0] = n_H3_plus[2:-2,0] * m_H3_plus
     rho_H3_plus[0:2,0]=n_H3_plus[0:2,0] * m_H3_plus
     rho_H3_plus[-2:,0]=n_H3_plus[-2:,0] * m_H3_plus
@@ -357,7 +357,7 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
     g = 24.79 #graviational acceleration
     
     #combine to read out
-    consts=[radius, mass_planet,b0,rot_period,dipole_offset,g]
+    consts=[radius,mass_planet,b0,rot_period,dipole_offset,g]
     
     #physical constants
     m_e = phys_consts[0]
@@ -366,11 +366,10 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
     e_charge = phys_consts[3]
     gamma = phys_consts[4]
     
-    #masses of neutral and ionic species at Saturn
+    #masses of neutral and ionic species
     m_H2 = 2*m_p
     m_He = 4*m_p
     m_H = m_p
-#    m_H2O = 18* m_p
     m_H_plus = m_p
     m_H3_plus = 3*m_p
 
@@ -388,8 +387,6 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
     rho_He = np.empty([len(z)+4,])
     n_H = np.empty([len(z)+4,])
     rho_H = np.empty([len(z)+4,])
-#    n_H2O = np.empty([len(z)+4,])
-#    rho_H2O = np.empty([len(z)+4,])
     S_H_plus = np.empty([len(z)+4,])
     S_H3_plus = np.empty([len(z)+4,])
     S_e = np.empty([len(z)+4,])
@@ -438,16 +435,16 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
     b_temp = 700
     
     #Initial H+ temperature profile and hence pressure (again log was a test I think so needs investigating again)
-    T_H_plus[2:-2,0] = 25* (x/20)**2*np.exp(-0.1*(x/20)) +b_temp +200*np.log(0.001*x+1)
+    T_H_plus[2:-2,0] = 500+ 25* (x/20)**2*np.exp(-0.1*(x/20)) +b_temp +200*np.log(0.001*x+1)#25
     T_H_plus[0,0]=b_temp
     T_H_plus[1,0]=b_temp
-    T_H_plus[-2:,0]=25* (ge_x/20)**2*np.exp(-0.1*(ge_x/20)) +b_temp +200*np.log(0.001*ge_x+1)
+    T_H_plus[-2:,0]=500+ 25* (ge_x/20)**2*np.exp(-0.1*(ge_x/20)) +b_temp +200*np.log(0.001*ge_x+1)#25
     
     #Initial H3+ temperature profile and hence pressure
-    T_H3_plus[2:-2,0] = 30* (x/15)**2*np.exp(-0.1*(x/15)) +b_temp +200*np.log(0.001*x+1)
+    T_H3_plus[2:-2,0] = 500+ 30* (x/15)**2*np.exp(-0.1*(x/15)) +b_temp +200*np.log(0.001*x+1)#30
     T_H3_plus[0,0]=b_temp
     T_H3_plus[1,0]=b_temp
-    T_H3_plus[-2:,0]=30* (ge_x/15)**2*np.exp(-0.1*(ge_x/15)) +b_temp +200*np.log(0.001*ge_x+1)
+    T_H3_plus[-2:,0]=500+ 30* (ge_x/15)**2*np.exp(-0.1*(ge_x/15)) +b_temp +200*np.log(0.001*ge_x+1)#30
     
     # initial H+ ion velocity - 1eV proton eV2vel(1,m_H_plus)
     u_H_plus[2:-2,0] = pw.T2v(T_H_plus[2:-2,0],m_H_plus)
@@ -469,17 +466,17 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
 #    n_H_plus[0:2,0] = 2*10**9*np.exp(-((gb_z-z[0])/H_hplus[0:2])) + 6*10**4
 #    n_H_plus[-2:,0] = 2*10**9*np.exp(-((ge_z-z[0])/H_hplus[-2:])) + 6*10**4
     
-    n_H_plus[2:-2,0] = 2*10**9*np.exp(-0.5*(z/z[0])) + 6*10**7
-    n_H_plus[0:2,0]=2*10**9*np.exp(-0.5*(gb_z/z[0])) + 6*10**7
-    n_H_plus[-2:,0]=2*10**9*np.exp(-0.5*(ge_z/z[0])) + 6*10**7
+    n_H_plus[2:-2,0] = 2*10**9*np.exp(-0.5*(z/z[0])) + 1*10**5 #6**7
+    n_H_plus[0:2,0]=2*10**9*np.exp(-0.5*(gb_z/z[0])) + 1*10**5
+    n_H_plus[-2:,0]=2*10**9*np.exp(-0.5*(ge_z/z[0])) + 1*10**5
     rho_H_plus[2:-2,0] = n_H_plus[2:-2,0] * m_H_plus
     rho_H_plus[0:2,0]=n_H_plus[0:2,0] * m_H_plus
     rho_H_plus[-2:,0]=n_H_plus[-2:,0] * m_H_plus
 
     #initial H3+ ion density - exponential decrease place holder
-    n_H3_plus[2:-2,0] = 1*10**10*np.exp(-0.4*(z/z[0])) + 10**8
-    n_H3_plus[0:2,0]=1*10**10*np.exp(-0.4*(gb_z/z[0])) + 10**8
-    n_H3_plus[-2:,0]=1*10**10*np.exp(-0.4*(ge_z/z[0])) + 10**8
+    n_H3_plus[2:-2,0] = 1*10**10*np.exp(-0.4*(z/z[0])) + 1*10**5 #edit these to make sure not falling off to zero
+    n_H3_plus[0:2,0]=1*10**10*np.exp(-0.4*(gb_z/z[0])) + 1*10**5
+    n_H3_plus[-2:,0]=1*10**10*np.exp(-0.4*(ge_z/z[0])) + 1*10**5 #**8
     rho_H3_plus[2:-2,0] = n_H3_plus[2:-2,0] * m_H3_plus
     rho_H3_plus[0:2,0]=n_H3_plus[0:2,0] * m_H3_plus
     rho_H3_plus[-2:,0]=n_H3_plus[-2:,0] * m_H3_plus
