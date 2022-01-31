@@ -671,5 +671,3 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
 #            }
     }
     
-    
-    return consts,A,FAC,ions,electrons,neutrals
