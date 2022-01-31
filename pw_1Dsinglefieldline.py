@@ -33,8 +33,8 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     import matplotlib.pyplot as pl
     import dipolefield
     import pw
-    import planet_edit as planet
-    import pw_plotting_tools_editt as pwpl # already been incorporated?
+    import planet
+    import pw_plotting_tools as pwpl # already been incorporated?
     # ---------------------------------Start Main-------------------------------------
     planet_name = 'jupiter'
     # dt = 0.01
