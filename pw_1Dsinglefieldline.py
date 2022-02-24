@@ -33,10 +33,10 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     import matplotlib.pyplot as pl
     import dipolefield
     import pw
-    import planet
-    import pw_plotting_tools as pwpl # already been incorporated?
+    import planet_edit as planet
+    import pw_plotting_tools_editt as pwpl # already been incorporated?
     # ---------------------------------Start Main-------------------------------------
-    planet_name = 'jupiter'
+    # planet_name = 'jupiter'
     # dt = 0.01
     # its=10000
     # rs = 3
@@ -47,14 +47,14 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     # saves=0
     # run_name='testB'
     #    Main folder to save plots and data to (obv change this)
-    folder = 'H:/pw_model/test_runs/polar_wind_outputs/'
-    # folder = 'C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs/polar_wind_outputs/'
+    #folder = 'H:/pw_model/test_runs/more_tests_feb/'
+    folder = 'C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs/desktop/'
+    #folder = 'C:/Users/Knowhow/OneDrive - Lancaster University/pw_model/test_runs/laptop/'
     # ---------------------------------Grid set up-------------------------------------    
     #800 spatial grids per Rs roughly - a bit more to round the numbers
-    #    rs = 3 #how far out in rs do you want to go - roughly?
-    inner = 1400000  #lower boundary
-    numpoints = rs * 800 
-    dz = 75000.0 # grid spacing
+    inner = 1400000  #lower boundary (1400km)
+    numpoints = int(rs * 800) 
+    dz = 75000.0 # grid spacing, 75km
     
     #set up grid
     z=np.zeros([numpoints,])
@@ -63,10 +63,13 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     z_ext[0] = inner - 2*dz # set ghost points
     z_ext[1] = inner - dz
     for k in range(1,numpoints):
-        z[k] = z[k-1] + dz #fill z array with values
+        z[k] = z[k-1] + dz #fill z array with values 
     for l in range(1,numpoints+3):    
         z_ext[l+1] = z_ext[l] + dz #fill z_ext array with values
     x = np.linspace(0,numpoints-1,numpoints) # linear array 0-end for making functions
+    # global zz
+    # zz = z/1000
+    
     
     #ghost points only
     gb_z = np.linspace(z_ext[0],z_ext[1],2)
@@ -84,7 +87,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     k_b = 1.38064852*10**-23 #m2 kg s-2 K-1  - boltzmann constant
     gamma = 5/3 #specific heat ratio
     
-    phys_consts = [m_e,m_p,k_b,e_charge,gamma] #combine to read into input module
+    phys_consts = [m_e,m_p,k_b,e_charge,gamma] #combine so can be used in planet module
     
     # -----------------------READ IN INITIAL CONDITIONS----------------------------
     #choose planet for input module - name of planet no capitals
@@ -100,7 +103,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         
     #optional field aligned currents    
     if FAC_flag != 0:
-        FAC = np.zeros(np.size(z_ext)) #if testing with/without field aligned currents
+        FAC = np.zeros(np.size(z_ext)) #if testing without field aligned currents
         print('Field aligned currents removed')
     else:
         print('Field aligned currents included')
@@ -140,7 +143,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     
     #optional centrifugal force    
     if CF_flag != 0:
-        ac=np.zeros(np.size(ag)) #if testing with/without centrifugal acceleration
+        ac=np.zeros(np.size(ag)) #if testing without centrifugal acceleration
         print('Centrifugal force removed')
     else:
         print('Centrifugal force included')
@@ -292,6 +295,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         for w in range(1,num_ionic_species+1):
             ion_flux[2:-2,i,w-1] = ions[w]["n"][2:-2,i]*ions[w]["u"][2:-2,i] * A[2:-2] 
         e_flux[2:-2,i] = pw.electron_flux_e(electrons,i)*A[2:-2]
+        
     
     
     #plotting 
@@ -308,16 +312,18 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
             pwpl.species_plot(z,z_ext,ions[q],radius)
             pl.savefig(folder+'species_plot_%s_%s_%s.png' %(planet_name,ions[q]['name'],run_name))
         print('Plots saved to: %s' %folder)
+              
     
     #Calculating total particle source
-    ind = np.max(np.where(z<20000000)) +1 # at altitude of 10000km
+    ind = np.max(np.where(z<10000000)) +1 #2# at altitude of 10000km 
+    print(ind)
     elef = e_flux[ind,-1]/A[ind] # electron flux at altitude of 10000km
     ionf=np.empty([num_ionic_species])
     for v in range(1,num_ionic_species+1):
         ionf[v-1] = ion_flux[ind,-1,v-1] / A[ind]# ion flux at altitude of 10000km
     
-    arc = 2/360 * 2*np.pi*(radius+20000000) #auroral arc of 2 deg width
-    circ = 2*np.pi*(radius+20000000)*np.sin(np.deg2rad(14)) #auroral arc centred on 14deg
+    arc = 10/360 * 2*np.pi*(radius+10000000) #auroral arc of 2 deg width #2
+    circ = 2*np.pi*(radius+10000000)*np.sin(np.deg2rad(14)) #auroral arc centred on 14deg #2
     
     elecTPS = elef*arc*circ*2
     ion1TPS = ionf[0]*arc*circ*2
@@ -328,8 +334,27 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     elecTMS = elecTPS * electrons['mass']
     ion1TMS = ion1TPS * ions[1]["mass"]
     ion2TMS = ion2TPS * ions[2]["mass"]
+    
     print('Total Mass Source [kg/s]')
     print(elecTMS+ion1TMS+ion2TMS)
+    # breakpoint()
+    
+    pl.figure(6)
+    # for k in range(1,num_ionic_species+1):
+    #     pl.plot(z/1000,ions[k]["S"][2:-2])
+    pl.plot(z/1000,electrons["S"][2:-2])
+    pl.xlabel('Distance (km)')
+    pl.ylabel('Mass Production Rate')
+    pl.yscale('log')
+    pl.title('Test Plot for Electron Mass Production Rate')
+    pl.savefig(folder+'test_plot_%s_%s_%s.png' %(planet_name,ions[q]['name'],run_name))
+    pl.show()
+    
+    
+    #pwpl.plot_me_quick(z/1000,E[2:-2],'Distance Along Field Line (km)','E Parallel (V/m)','on')
+    #pl.savefig(folder+'test_plot_%s_%s.png' %(planet_name,run_name))
+    #for some reason this is just making another H3+ graph??
+    # try manually writing out own plotting function
     
     if saves ==1:
         

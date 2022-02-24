@@ -1,28 +1,31 @@
+# -*- coding: utf-8 -*-
 """
 Created on Mon Nov 22 11:57:07 2021
 
 @author: joyceh1
 """
 
-# import pw_20190502_hannahedit as pw_HJ
-import pw_1Dsinglefieldline_wipfix as pwm
+#import pw_20190502_hannahedit as pw_HJ
+from pw_1Dsinglefieldline_testing import polar_wind_outflow as pwm
+#import pw_plotting_tools_editt as pwpt
 
-# pw_20190502_hannahedit.polar_wind_outflow('jupiter',0.01,100,3,33,0,0,1,1,'TestA')
+#pw_HJ.polar_wind_outflow('jupiter',0.01,10000,3,33,0,0,1,1,'TestA')
 
-pwm.polar_wind_outflow('jupiter',0.01,50000,3,33,0,0,1,1,'1C')
+pwm('jupiter',0.01,10000,3,12,1,0,1,1,'fixrhotest1')
 # 0.01,10000,3,16,0,0,1,0
+
+#pwm('planet_name', dt, its, rs, lshell, FAC_flag, CF_flag, plots, saves, run_name)
+
+#pwpt.plot_me_quick(e_flux,zz,'xlabel','Distance','on')
+
+
+# print(pwm.e_flux)
 
 '''
 notes:  
     
     
-    current issues: inputs looks mostly correct now! not 100% sure if the changes made are going to fix issues though as it was
-    playing with the numbers more than anything else
-    results plot: electron and ion fluxes increase drastically at the point they should be flattening out? yes there is an 
-    initial small increase after the minimum but then should decrease and flatten
-    
-    all electric fields have the wrong starting point, but the right shape? 
-    
-    unsure about temp and number density as have nothing to compare to
+  currently n is initially a factor of 10 to low and drops off by another 10**2 by the end
+  is only changed by rho, so either changes in rho are the problem or the initial values
     
 '''

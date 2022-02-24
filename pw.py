@@ -89,6 +89,7 @@ def E_second_term(electrons,ions,dMdt,num_ionic_species,j):
 #==============================================================================
 def E_parallel_short(e_charge, n_e, dFdt,A, dAdr, rho_e,u_e):
 #Returns: electric field, short term
+
 #Requires: electron charge, electron number density, dFdt = d/dr(P_e - rho_e*u_e^2)
 #          areaA, spatial area differential, electron mass density, electron velocity
 #Ref: Gombozi+1985, Glocer+ 2007 etc.
@@ -110,7 +111,7 @@ def density_dt_ion(dt,A,S,rho,dFdt):
 #requires: time step, area vector, mass production, mass density
 #           dFdt = d/dr(A rho u)
 #ref: Gombozi+1985, Glocer+ 2007 etc.
-    return ((dt/A)*(A*S-dFdt)+rho)
+    return (((dt/A)*(A*S-dFdt)) + rho)
 # dt/A x (area of flux tube *mass production -dFdt) +mass density
 #==============================================================================    
 def density_dt_electron(electrons,ions,num_ionic_species,j):
