@@ -119,6 +119,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     
     # arrrays for looking at iterations
     elec_its = np.empty([len(z_ext),its])
+    ion_its = np.empty([len(z_ext),its,num_ionic_species,])
     ion_its_T = np.empty([len(z_ext),its,num_ionic_species,])
     elec_its_T = np.empty([len(z_ext),its])
     
