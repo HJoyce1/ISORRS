@@ -36,18 +36,6 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     import planet_edit as planet
     import pw_plotting_tools_editt as pwpl # already been incorporated?
     # ---------------------------------Start Main-------------------------------------
-    # planet_name = 'jupiter'
-    # dt = 0.01
-    # its=10000
-    # rs = 3
-    # lshell=16 #y_eq[h-1]
-    # FAC_flag =0
-    # CF_flag =0
-    # plots=1
-    # saves=0
-    # run_name='testB'
-    #    Main folder to save plots and data to (obv change this)
-    #folder = 'H:/pw_model/test_runs/more_tests_feb/'
     folder = 'C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs/desktop/'
     #folder = 'C:/Users/Knowhow/OneDrive - Lancaster University/pw_model/test_runs/laptop/'
     # ---------------------------------Grid set up-------------------------------------    
@@ -67,7 +55,6 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     for l in range(1,numpoints+3):    
         z_ext[l+1] = z_ext[l] + dz #fill z_ext array with values
     x = np.linspace(0,numpoints-1,numpoints) # linear array 0-end for making functions
-    # global zz
     # zz = z/1000
     
     
@@ -125,11 +112,15 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     rot_period= consts[3]
     dipole_offset= consts[4]
     #    g= consts[5]
-    #    lshell=33 #equivalent to 80 degrees latitude
     
     #Determine number of ion and neutral species
     num_ionic_species = len(ions)
     num_neutral_species = len(neutrals)
+    
+    # arrrays for looking at iterations
+    elec_its = np.empty([len(z_ext),its])
+    ion_its_T = np.empty([len(z_ext),its,num_ionic_species,])
+    elec_its_T = np.empty([len(z_ext),its])
     
     # plot input values - can take up to 7-neutral 7-ion species for diff colours
     if plots ==1:
@@ -163,7 +154,16 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     ion_flux = np.empty([len(z_ext),its,num_ionic_species,])
     # ----------------------------------------------------------------------------   
     for i in range(1,its):
-    #        print(i)
+        # This prints out some information to the terminal to tell us how
+        # it is proceeding.  The code is a bit convoluted but basically
+        # int(32*i/its)*'■' works out the fraction of iterations completed
+        # out of the maximum (i/its) multiplies it by 32, turns it into
+        # a whole number, then repeats the ■ symbol that many times.
+        #
+        # The if statement means we only update every 10th step.
+        if i%10==0:
+            print('\rIterating [{}{}] iteration {:5d}/{:5d}'.format(
+                int(32*i/its)*'■',(32-int(32*i/its))*' ',i,its),end='')
         for n in range(1,num_ionic_species+1):
             for p in range(1,num_neutral_species+1):
                 # calculate momentum exchange rate for each neutral species
@@ -219,7 +219,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         dTedr[0] = np.nan
         dTedr[-1] = np.nan    
         
-        dPrhou2 = (np.roll(electrons["P"][:,i-1]+electrons["rho"][:,i-1]*electrons["u"][:,i-1]**2,-1)-np.roll(electrons["P"][:,i-1]+electrons["rho"][:,i-1]*electrons["u"][:,i-1]**2,1))/(2*dz)
+        dPrhou2 = (np.roll(electrons["P"][:,i-1]-electrons["rho"][:,i-1]*electrons["u"][:,i-1]**2,-1)-np.roll(electrons["P"][:,i-1]+electrons["rho"][:,i-1]*electrons["u"][:,i-1]**2,1))/(2*dz) #was Pe - rhoe*ue**2
         dPrhou2[0] = np.nan
         dPrhou2[-1] = np.nan
         
@@ -296,8 +296,12 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
             ion_flux[2:-2,i,w-1] = ions[w]["n"][2:-2,i]*ions[w]["u"][2:-2,i] * A[2:-2] 
         e_flux[2:-2,i] = pw.electron_flux_e(electrons,i)*A[2:-2]
         
-    
-    
+        for b in range(1,num_ionic_species+1):
+            ion_its[2:-2,i,b-1] = np.abs(ions[b]["rho"][2:-2,i]-ions[b]["rho"][2:-2,i-1])/ions[b]["rho"][2:-2,i-1]
+            ion_its_T[2:-2,i,b-1] = np.abs(ions[b]["T"][2:-2,i]-ions[b]["T"][2:-2,i-1])/ions[b]["T"][2:-2,i-1]
+        elec_its[2:-2,i] = np.abs(electrons["rho"][2:-2,i]-electrons["rho"][2:-2,i-1])/electrons["rho"][2:-2,i-1]
+        elec_its_T[2:-2,i] = np.abs(electrons["T"][2:-2,i]-electrons["T"][2:-2,i-1])/electrons["T"][2:-2,i-1]
+   
     #plotting 
     if plots ==1:
         print('Plots on screen')
@@ -339,24 +343,112 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     print(elecTMS+ion1TMS+ion2TMS)
     # breakpoint()
     
+    #  import pandas as pd 
+   #  carley_graph = pd.read_csv('C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs/graph_compare/extracts/nH_plus_extract.csv',index_col=False)
+   #  carley_graph_x = carley_graph.Distance
+   #  carley_graph_y = carley_graph.NumberDensity
+   #  carley_graph2 = pd.read_csv('C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs/graph_compare/extracts/ue_extract.csv',index_col=False)
+   #  carley_graph_x2 = carley_graph2.Distance
+   #  carley_graph_y2 = carley_graph2.Velocity
+   #  pl.figure(6)
+   #  pl.subplot(2,1,1)
+   #  pl.plot(carley_graph_x, carley_graph_y)
+   #  pl.plot(z/1000,ions[1]["n"][2:-2,0])
+   #  pl.legend(['Carley','Hannah'])
+   #  pl.xlabel('Distance (km)')
+   #  pl.ylabel('Number Density(m^-3)')
+   #  pl.yscale('log')
+   # # pl.savefig(folder+'compare_plot_%s_%s.png' %(planet_name,run_name))
+    
+   #  pl.subplot(2,1,2)
+   #  pl.plot(carley_graph_x2, carley_graph_y2)
+   #  pl.plot(z/1000,electrons["u"][2:-2,0])
+   #  pl.legend(['Carley','Hannah'])
+   #  pl.xlabel('Distance (km)')
+   #  pl.ylabel('Velocity(m/s)')
+   #  #pl.yscale('log')
+   #  pl.savefig(folder+'compare_plot_%s_%s.png' %(planet_name,run_name))
+    
+    # pl.figure(6)
+    # # for k in range(1,num_ionic_species+1):
+    # #     pl.plot(z/1000,ions[k]["S"][2:-2])
+    # for j in range(0,10000,5):
+    #     pl.plot(z/1000,ions[1]["n"][2:-2,j])
+    #     pl.xlabel('Distance (km)')
+    #     pl.ylabel('Number  Density(m^-3)')
+    #     pl.yscale('log')
+    #     pl.title('Iterations Plot')
+    #     pl.savefig(folder+'ion_iteration_plot_%s_%s_%s.png' %(planet_name,ions[1]['name'],run_name))
     pl.figure(6)
-    # for k in range(1,num_ionic_species+1):
-    #     pl.plot(z/1000,ions[k]["S"][2:-2])
-    pl.plot(z/1000,electrons["S"][2:-2])
-    pl.xlabel('Distance (km)')
-    pl.ylabel('Mass Production Rate')
+    pl.figure(figsize=(10,6)) 
+    pl.subplot(3,1,1)
+    pl.plot(z/1000,ion_its[2:-2,:,0])
+    pl.title('Percentage Change of Mass Density')
     pl.yscale('log')
-    pl.title('Test Plot for Electron Mass Production Rate')
-    pl.savefig(folder+'test_plot_%s_%s_%s.png' %(planet_name,ions[q]['name'],run_name))
+    pl.ylabel('H+ Percentage Change')
+    
+    pl.subplot(3,1,2)
+    pl.plot(z/1000,ion_its[2:-2,:,1])
+    pl.yscale('log')
+    pl.ylabel('H3+ Percentage Change')
+    
+    
+    pl.subplot(3,1,3)
+    pl.plot(z/1000,elec_its[2:-2,:])
+    pl.ylabel('e Percentage Change')
+    pl.xlabel('Distance (km)')
+    pl.yscale('log')
+    pl.savefig(folder+'fractional_difference_rho_%s_%s.png'%(planet_name,run_name))
+    
+    pl.figure(7)
+    pl.figure(figsize=(10,6)) 
+    pl.subplot(3,1,1)
+    pl.plot(z/1000,ion_its_T[2:-2,:,0])
+    pl.title('Percentage Change of Temperature')
+    pl.yscale('log')
+    pl.ylabel('H+ Percentage Change')
+    
+    pl.subplot(3,1,2)
+    pl.plot(z/1000,ion_its_T[2:-2,:,1])
+    pl.yscale('log')
+    pl.ylabel('H3+ Percentage Change')
+    
+    
+    pl.subplot(3,1,3)
+    pl.plot(z/1000,elec_its_T[2:-2,:])
+    pl.ylabel('e Percentage Change')
+    pl.xlabel('Distance (km)')
+    pl.yscale('log')
+    pl.savefig(folder+'fractional_difference_T_%s_%s.png'%(planet_name,run_name))
     pl.show()
     
-    
-    #pwpl.plot_me_quick(z/1000,E[2:-2],'Distance Along Field Line (km)','E Parallel (V/m)','on')
-    #pl.savefig(folder+'test_plot_%s_%s.png' %(planet_name,run_name))
-    #for some reason this is just making another H3+ graph??
-    # try manually writing out own plotting function
-    
     if saves ==1:
+        # This new piece of code saves polar wind calculations for all
+        # iterations to NumPy pickle files.  This code is hacked together
+        # to export specifically for Jupiter and isn't general, so if this
+        # is tried with Saturn then won't work correctly.  This only saves the
+        # first 100 iterations to save space (the its_to_save variable contains
+        # the ranges of iterations to save).
+        its_to_save = range(0,100,1)
+        np.savez('polar_wind_output_alliter_{}_{}'.format(planet_name,run_name),
+                n_hplus=ions[1]["n"][2:-2,its_to_save],
+                n_h3plus=ions[2]["n"][2:-2,its_to_save],
+                n_e=electrons["n"][2:-2,its_to_save],
+                T_hplus=ions[1]["T"][2:-2,its_to_save],
+                T_h3plus=ions[2]["T"][2:-2,its_to_save],
+                T_e=electrons["T"][2:-2,its_to_save],
+                u_hplus=ions[1]["u"][2:-2,its_to_save],
+                u_h3plus=ions[2]["n"][2:-2,its_to_save],
+                u_e=electrons["u"][2:-2,its_to_save],
+                kappa_hplus=ions[1]["kappa"][2:-2,its_to_save],
+                kappa_h3plus=ions[2]["kappa"][2:-2,its_to_save],
+                kappa_e=electrons["kappa"][2:-2,its_to_save],
+                flux_hplus=ion_flux[:,its_to_save,0],
+                flux_h3plus=ion_flux[:,its_to_save,1],
+                flux_el=e_flux[:,its_to_save],
+                its_hplus=ion_its[:,its_to_save,0], #added these two so can use them in pickles
+                its_h3plus=ion_its[:,its_to_save,1],
+                z=z, iterations=np.array(its_to_save))
         
         #create and open file
         fid = folder+"polar_wind_output_%s_%s.txt" %(planet_name,run_name)
