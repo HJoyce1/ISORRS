@@ -436,8 +436,8 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
     
     #Field aligned currents
 #    idx = (np.abs(z - radius/2)).argmin() #find index of closest point to 1 Rj
-    FAC = 0* (A[2]/A) # 1-7 microAm-1 from Ray+ 2009 #1e-11
-    b_temp = 200
+    FAC = 1e-11* (A[2]/A) # 1-7 microAm-1 from Ray+ 2009 #1e-11
+    b_temp = 700
     
     #Initial H+ temperature profile and hence pressure (again log was a test I think so needs investigating again)
     T_H_plus[2:-2,0] = 500+ 25* (x/20)**2*np.exp(-0.1*(x/20)) +b_temp +200*np.log(0.001*x+1)#25
@@ -471,17 +471,18 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
 #    n_H_plus[0:2,0] = 2*10**9*np.exp(-((gb_z-z[0])/H_hplus[0:2])) + 6*10**4
 #    n_H_plus[-2:,0] = 2*10**9*np.exp(-((ge_z-z[0])/H_hplus[-2:])) + 6*10**4
     
-    n_H_plus[2:-2,0] = 2*10**9*np.exp(-0.65*(z/z[0])) + 8*10**4#+ 6*10**7#8*10**4
-    n_H_plus[0:2,0] =2*10**9*np.exp(-0.65*(gb_z/z[0])) + 8*10**4#+ 6*10**7#8*10**4
-    n_H_plus[-2:,0]=2*10**9*np.exp(-0.65*(ge_z/z[0]))+ 8*10**4#+ 6*10**7#8*10**4
+    H_plus_floor = 10**5
+    n_H_plus[2:-2,0] = 2*10**10*np.exp(-0.5*(z/z[0])) + H_plus_floor#+ 6*10**7#8*10**4
+    n_H_plus[0:2,0] =2*10**10*np.exp(-0.5*(gb_z/z[0])) + H_plus_floor#+ 6*10**7#8*10**4
+    n_H_plus[-2:,0]=2*10**10*np.exp(-0.5*(ge_z/z[0]))+ H_plus_floor#+ 6*10**7#8*10**4
     rho_H_plus[2:-2,0] = n_H_plus[2:-2,0] * m_H_plus
     rho_H_plus[0:2,0]=n_H_plus[0:2,0] * m_H_plus
     rho_H_plus[-2:,0]=n_H_plus[-2:,0] * m_H_plus
 
     #initial H3+ ion density - exponential decrease place holder
-    n_H3_plus[2:-2,0] = 1*10**10*np.exp(-0.55*(z/z[0])) +10**5#+ 10**8#+ 1*10**5 #edit these to make sure not falling off to zero
-    n_H3_plus[0:2,0]=1*10**10*np.exp(-0.55*(gb_z/z[0])) +10**5#+ 10**8#+ 1*10**5
-    n_H3_plus[-2:,0]=1*10**10*np.exp(-0.55*(ge_z/z[0])) +10**5#+ 10**8 
+    n_H3_plus[2:-2,0] = 1*10**11*np.exp(-0.4*(z/z[0])) +10**8##+ 10**8#+ 1*10**5 #edit these to make sure not falling off to zero
+    n_H3_plus[0:2,0]=1*10**11*np.exp(-0.4*(gb_z/z[0])) +10**8#+ 10**8#+ 1*10**5
+    n_H3_plus[-2:,0]=1*10**11*np.exp(-0.4*(ge_z/z[0])) +10**8#+ 10**8 
     rho_H3_plus[2:-2,0] = n_H3_plus[2:-2,0] * m_H3_plus
     rho_H3_plus[0:2,0]=n_H3_plus[0:2,0] * m_H3_plus
     rho_H3_plus[-2:,0]=n_H3_plus[-2:,0] * m_H3_plus
