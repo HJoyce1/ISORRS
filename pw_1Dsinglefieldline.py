@@ -32,12 +32,12 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     import numpy as np
     import matplotlib.pyplot as pl
     import dipolefield
-    import pw
-    import planet_edit as planet
+    import pw_edit2 as pw
+    import planet_edit2 as planet
     import pw_plotting_tools_editt as pwpl # already been incorporated?
     # ---------------------------------Start Main-------------------------------------
-    folder = 'C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs/desktop/'
-    #folder = 'C:/Users/Knowhow/OneDrive - Lancaster University/pw_model/test_runs/laptop/'
+    folder = 'H:/pw_model/test_runs/march/'
+    #folder = 'C:/Users/Knowhow/OneDrive - Lancaster University/pw_model/test_runs/graph_compare/'
     # ---------------------------------Grid set up-------------------------------------    
     #800 spatial grids per Rs roughly - a bit more to round the numbers
     inner = 1400000  #lower boundary (1400km)
@@ -118,8 +118,8 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     num_neutral_species = len(neutrals)
     
     # arrrays for looking at iterations
-    elec_its = np.empty([len(z_ext),its])
-    ion_its = np.empty([len(z_ext),its,num_ionic_species,])
+    ion_its= np.empty([len(z_ext),its,num_ionic_species,])
+    elec_its= np.empty([len(z_ext),its])
     ion_its_T = np.empty([len(z_ext),its,num_ionic_species,])
     elec_its_T = np.empty([len(z_ext),its])
     
@@ -220,7 +220,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         dTedr[0] = np.nan
         dTedr[-1] = np.nan    
         
-        dPrhou2 = (np.roll(electrons["P"][:,i-1]-electrons["rho"][:,i-1]*electrons["u"][:,i-1]**2,-1)-np.roll(electrons["P"][:,i-1]+electrons["rho"][:,i-1]*electrons["u"][:,i-1]**2,1))/(2*dz) #was Pe - rhoe*ue**2
+        dPrhou2 = (np.roll(electrons["P"][:,i-1]-electrons["rho"][:,i-1]*electrons["u"][:,i-1]**2,-1)-np.roll(electrons["P"][:,i-1]-electrons["rho"][:,i-1]*electrons["u"][:,i-1]**2,1))/(2*dz) #was Pe - rhoe*ue**2
         dPrhou2[0] = np.nan
         dPrhou2[-1] = np.nan
         
@@ -344,31 +344,31 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     print(elecTMS+ion1TMS+ion2TMS)
     # breakpoint()
     
-    #  import pandas as pd 
-   #  carley_graph = pd.read_csv('C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs/graph_compare/extracts/nH_plus_extract.csv',index_col=False)
-   #  carley_graph_x = carley_graph.Distance
-   #  carley_graph_y = carley_graph.NumberDensity
-   #  carley_graph2 = pd.read_csv('C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs/graph_compare/extracts/ue_extract.csv',index_col=False)
-   #  carley_graph_x2 = carley_graph2.Distance
-   #  carley_graph_y2 = carley_graph2.Velocity
-   #  pl.figure(6)
-   #  pl.subplot(2,1,1)
-   #  pl.plot(carley_graph_x, carley_graph_y)
-   #  pl.plot(z/1000,ions[1]["n"][2:-2,0])
-   #  pl.legend(['Carley','Hannah'])
-   #  pl.xlabel('Distance (km)')
-   #  pl.ylabel('Number Density(m^-3)')
-   #  pl.yscale('log')
-   # # pl.savefig(folder+'compare_plot_%s_%s.png' %(planet_name,run_name))
+    import pandas as pd 
+    carley_graph = pd.read_csv('H:/pw_model/test_runs/march/extracts/nH_plus_extract.csv',index_col=False)
+    carley_graph_x = carley_graph.Distance
+    carley_graph_y = carley_graph.NumberDensity
+    carley_graph2 = pd.read_csv('H:/pw_model/test_runs/march/extracts/nH3_plus_extract.csv',index_col=False)
+    carley_graph_x2 = carley_graph2.Distance
+    carley_graph_y2 = carley_graph2.Velocity
+    pl.figure(6)
+    pl.subplot(2,1,1)
+    pl.plot(carley_graph_x, carley_graph_y)
+    pl.plot(z/1000,ions[1]["n"][2:-2,0])
+    pl.legend(['Carley','Hannah'])
+    pl.xlabel('Distance (km)')
+    pl.ylabel('Number Density(m^-3)')
+    pl.yscale('log')
+    #pl.savefig(folder+'compare_plot_%s_%s.png' %(planet_name,run_name))
     
-   #  pl.subplot(2,1,2)
-   #  pl.plot(carley_graph_x2, carley_graph_y2)
-   #  pl.plot(z/1000,electrons["u"][2:-2,0])
-   #  pl.legend(['Carley','Hannah'])
-   #  pl.xlabel('Distance (km)')
-   #  pl.ylabel('Velocity(m/s)')
-   #  #pl.yscale('log')
-   #  pl.savefig(folder+'compare_plot_%s_%s.png' %(planet_name,run_name))
+    pl.subplot(2,1,2)
+    pl.plot(carley_graph_x2, carley_graph_y2)
+    pl.plot(z/1000,ions[2]["n"][2:-2,0])
+    pl.legend(['Carley','Hannah'])
+    pl.xlabel('Distance (km)')
+    pl.ylabel('Number Density(m^-3)')
+    pl.yscale('log')
+    pl.savefig(folder+'compare_plot_%s_%s.png' %(planet_name,run_name))
     
     # pl.figure(6)
     # # for k in range(1,num_ionic_species+1):
@@ -380,48 +380,50 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     #     pl.yscale('log')
     #     pl.title('Iterations Plot')
     #     pl.savefig(folder+'ion_iteration_plot_%s_%s_%s.png' %(planet_name,ions[1]['name'],run_name))
-    pl.figure(6)
-    pl.figure(figsize=(10,6)) 
-    pl.subplot(3,1,1)
-    pl.plot(z/1000,ion_its[2:-2,:,0])
-    pl.title('Percentage Change of Mass Density')
-    pl.yscale('log')
-    pl.ylabel('H+ Percentage Change')
     
-    pl.subplot(3,1,2)
-    pl.plot(z/1000,ion_its[2:-2,:,1])
-    pl.yscale('log')
-    pl.ylabel('H3+ Percentage Change')
+    #ITERATIONS PLOTTING
+    # pl.figure(6)
+    # pl.figure(figsize=(10,6)) 
+    # pl.subplot(3,1,1)
+    # pl.plot(z/1000,ion_its[2:-2,:,0])
+    # pl.title('Percentage Change of Mass Density')
+    # pl.yscale('log')
+    # pl.ylabel('H+ Percentage Change')
     
-    
-    pl.subplot(3,1,3)
-    pl.plot(z/1000,elec_its[2:-2,:])
-    pl.ylabel('e Percentage Change')
-    pl.xlabel('Distance (km)')
-    pl.yscale('log')
-    pl.savefig(folder+'fractional_difference_rho_%s_%s.png'%(planet_name,run_name))
-    
-    pl.figure(7)
-    pl.figure(figsize=(10,6)) 
-    pl.subplot(3,1,1)
-    pl.plot(z/1000,ion_its_T[2:-2,:,0])
-    pl.title('Percentage Change of Temperature')
-    pl.yscale('log')
-    pl.ylabel('H+ Percentage Change')
-    
-    pl.subplot(3,1,2)
-    pl.plot(z/1000,ion_its_T[2:-2,:,1])
-    pl.yscale('log')
-    pl.ylabel('H3+ Percentage Change')
+    # pl.subplot(3,1,2)
+    # pl.plot(z/1000,ion_its[2:-2,:,1])
+    # pl.yscale('log')
+    # pl.ylabel('H3+ Percentage Change')
     
     
-    pl.subplot(3,1,3)
-    pl.plot(z/1000,elec_its_T[2:-2,:])
-    pl.ylabel('e Percentage Change')
-    pl.xlabel('Distance (km)')
-    pl.yscale('log')
-    pl.savefig(folder+'fractional_difference_T_%s_%s.png'%(planet_name,run_name))
-    pl.show()
+    # pl.subplot(3,1,3)
+    # pl.plot(z/1000,elec_its[2:-2,:])
+    # pl.ylabel('e Percentage Change')
+    # pl.xlabel('Distance (km)')
+    # pl.yscale('log')
+    # pl.savefig(folder+'fractional_difference_rho_%s_%s.png'%(planet_name,run_name))
+    
+    # pl.figure(7)
+    # pl.figure(figsize=(10,6)) 
+    # pl.subplot(3,1,1)
+    # pl.plot(z/1000,ion_its_T[2:-2,:,0])
+    # pl.title('Percentage Change of Temperature')
+    # pl.yscale('log')
+    # pl.ylabel('H+ Percentage Change')
+    
+    # pl.subplot(3,1,2)
+    # pl.plot(z/1000,ion_its_T[2:-2,:,1])
+    # pl.yscale('log')
+    # pl.ylabel('H3+ Percentage Change')
+    
+    
+    # pl.subplot(3,1,3)
+    # pl.plot(z/1000,elec_its_T[2:-2,:])
+    # pl.ylabel('e Percentage Change')
+    # pl.xlabel('Distance (km)')
+    # pl.yscale('log')
+    # pl.savefig(folder+'fractional_difference_T_%s_%s.png'%(planet_name,run_name))
+    # pl.show()
     
     if saves ==1:
         # This new piece of code saves polar wind calculations for all
