@@ -29,27 +29,29 @@
 #EXAMPLE: polar_wind_outflow('jupiter',0.01,10000,3,16,0,0,1,0,'anything'):
 def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_name): 
     # ---------------------------------Imports-------------------------------------
+    # import packages and modules to run the code
     import numpy as np
     import matplotlib.pyplot as pl
     import dipolefield
-    import pw_edit2 as pw
-    import planet_edit2 as planet
-    import pw_plotting_tools_editt as pwpl # already been incorporated?
+    import pw as pw
+    import planet as planet
+    import pw_plotting_tools as pwpl
     # ---------------------------------Start Main-------------------------------------
-    folder = 'H:/pw_model/test_runs/march/'
-    #folder = 'C:/Users/Knowhow/OneDrive - Lancaster University/pw_model/test_runs/graph_compare/'
+    #folder = 'H:/pw_model/test_runs/march/'
+    #folder = 'C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs/march/'
+    folder = 'C:/Users/Knowhow/OneDrive - Lancaster University/pw_model/test_runs/march/'
     # ---------------------------------Grid set up-------------------------------------    
     #800 spatial grids per Rs roughly - a bit more to round the numbers
     inner = 1400000  #lower boundary (1400km)
-    numpoints = int(rs * 800) 
+    numpoints = int(rs * 800) #chnage to int just in case a float is entered
     dz = 75000.0 # grid spacing, 75km
     
     #set up grid
-    z=np.zeros([numpoints,])
+    z=np.zeros([numpoints,]) #empty grid to fill 
     z_ext=np.zeros([numpoints+4,]) #for ghost points
     z[0] = inner #set lower boundary
     z_ext[0] = inner - 2*dz # set ghost points
-    z_ext[1] = inner - dz
+    z_ext[1] = inner - dz 
     for k in range(1,numpoints):
         z[k] = z[k-1] + dz #fill z array with values 
     for l in range(1,numpoints+3):    
@@ -58,8 +60,8 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     # zz = z/1000
     
     
-    #ghost points only
-    gb_z = np.linspace(z_ext[0],z_ext[1],2)
+    #ghost points
+    gb_z = np.linspace(z_ext[0],z_ext[1],2)  
     ge_z = np.linspace(z_ext[-2],z_ext[-1],2)
     gb_x = np.linspace(-1,0,2)
     ge_x = np.linspace(numpoints,numpoints+1,2)
@@ -69,7 +71,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     # -------------------------Physical Constants----------------------------------
     # Constants set-up
     e_charge = 1.60217662*10**-19  #C - electron charge
-    m_p = 1.6726*10**-27 # kg - mass of a proton
+    m_p = 1.6726219*10**-27 # kg - mass of a proton
     m_e = 9.10938356 * 10**-31 # kg - mass of an electron
     k_b = 1.38064852*10**-23 #m2 kg s-2 K-1  - boltzmann constant
     gamma = 5/3 #specific heat ratio
@@ -90,7 +92,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         
     #optional field aligned currents    
     if FAC_flag != 0:
-        FAC = np.zeros(np.size(z_ext)) #if testing without field aligned currents
+        FAC = np.zeros(np.size(z_ext)) #if testing without field aligned currents - overwrite FAC to 0
         print('Field aligned currents removed')
     else:
         print('Field aligned currents included')
@@ -105,19 +107,19 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     ion2_flux = np.empty([len(z)+4,its])
     ion2_flux[:,0] = np.nan # no initial values for ion2 flux
     
-    # unpack constants
+    # unpack constants from planet module
     radius = consts[0]
     mass_planet= consts[1]
     b0= consts[2]
     rot_period= consts[3]
     dipole_offset= consts[4]
-    #    g= consts[5]
+    # g= consts[5]
     
-    #Determine number of ion and neutral species
+    # determine number of ion and neutral species based on planet
     num_ionic_species = len(ions)
     num_neutral_species = len(neutrals)
     
-    # arrrays for looking at iterations
+    # create empty arrays for looking at what the iterations are doing
     ion_its= np.empty([len(z_ext),its,num_ionic_species,])
     elec_its= np.empty([len(z_ext),its])
     ion_its_T = np.empty([len(z_ext),its,num_ionic_species,])
@@ -135,7 +137,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     
     #optional centrifugal force    
     if CF_flag != 0:
-        ac=np.zeros(np.size(ag)) #if testing without centrifugal acceleration
+        ac=np.zeros(np.size(ag)) #if testing without centrifugal acceleration replace CF with 0
         print('Centrifugal force removed')
     else:
         print('Centrifugal force included')
@@ -155,6 +157,8 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     ion_flux = np.empty([len(z_ext),its,num_ionic_species,])
     # ----------------------------------------------------------------------------   
     for i in range(1,its):
+        #this is the main loop for the iterations
+        
         # This prints out some information to the terminal to tell us how
         # it is proceeding.  The code is a bit convoluted but basically
         # int(32*i/its)*'■' works out the fraction of iterations completed
@@ -165,12 +169,14 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         if i%10==0:
             print('\rIterating [{}{}] iteration {:5d}/{:5d}'.format(
                 int(32*i/its)*'■',(32-int(32*i/its))*' ',i,its),end='')
+            
+        # calculating momemtum and energy exchange rates   
         for n in range(1,num_ionic_species+1):
             for p in range(1,num_neutral_species+1):
-                # calculate momentum exchange rate for each neutral species
+                # calculate exchange rate for each neutral species
                 dMdt_tmp[:,p-1] = pw.momentum_rate_1species(neutrals[p]["rho"],ions[n]["mass"],neutrals[p]["mass"],neutrals[p]["lambda"], e_charge,ions[n]["rho"][:,i-1],ions[n]["u"][:,i-1])
                 dEdt_tmp[:,p-1] = pw.energy_rate_1species(ions[n]["rho"][:,i-1],neutrals[p]["rho"],ions[n]["mass"],neutrals[p]["mass"], neutrals[p]["lambda"], e_charge, neutrals[p]["T"],ions[n]["T"][:,i-1],ions[n]["u"][:,i-1],k_b)
-            # sum each neutral species for each ionic species to get momentum exchange rate for each ionic species
+            # sum each neutral species for each ionic species to get exchange rate for each ionic species
             dMdt[:,n-1] = - np.sum(dMdt_tmp, axis=1)
             dMdt_tmp = np.empty([len(z_ext),num_neutral_species])    
             dEdt[:,n-1] = np.sum(dEdt_tmp, axis=1)
@@ -181,11 +187,15 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     # TODO: Better numerical algorithm than the central difference!
     # ions
     
+    #calculating the differentials from the transport equations
+    
         for m in range(1,num_ionic_species+1):
+            # d/dr (A x rho x u)
             dArhou[:,m-1] = (np.roll(A * ions[m]["u"][:,i-1] *ions[m]["rho"][:,i-1],-1) - np.roll(A * ions[m]["u"][:,i-1] *ions[m]["rho"][:,i-1],1))/(2*dz)
             dArhou[0,m-1] = np.nan
             dArhou[-1,m-1] = np.nan
             
+            # d/dr (A x rho x u^2)
             dArhou2[:,m-1]= (np.roll(A * ions[m]["u"][:,i-1]**2 * ions[m]["rho"][:,i-1],-1)-np.roll(A * ions[m]["u"][:,i-1]**2 * ions[m]["rho"][:,i-1],1))/(2*dz)
             dArhou2[0,m-1] = np.nan
             dArhou2[-1,m-1] = np.nan
@@ -198,20 +208,24 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
             dTdr[0,m-1] = np.nan
             dTdr[-1,m-1] = np.nan 
             
+            # d/dr x (1/2 x A x rho x u^3 - A x u x P x gamma/gamma - 1)
             dEngdr[:,m-1]= (np.roll((0.5 * A * ions[m]["u"][:,i-1]**3 * ions[m]["rho"][:,i-1] + gamma/(gamma-1) * A * ions[m]["u"][:,i-1] * ions[m]["P"][:,i-1]),-1)-np.roll((0.5 * A * ions[m]["u"][:,i-1]**3 * ions[m]["rho"][:,i-1] + gamma/(gamma-1) * A * ions[m]["u"][:,i-1] * ions[m]["P"][:,i-1]),1))/(2*dz)
             dEngdr[0,m-1] = np.nan
             dEngdr[-1,m-1] = np.nan 
                     
+            # kappa
             dkdr[:,m-1] = (np.roll(ions[m]["kappa"][:,i-1],-1)-np.roll(ions[m]["kappa"][:,i-1],1))/(2*dz)
             dkdr[0,m-1] = np.nan
             dkdr[-1,m-1] = np.nan
         
         #uses both ions for one term - can take as many ion species as it wants
+        # for E
         dEdr = (np.roll(pw.E_second_term(electrons,ions,dMdt,num_ionic_species,i),-1)-np.roll(pw.E_second_term(electrons,ions,dMdt,num_ionic_species,i),1))/(2*dz)
         dEdr[0] = np.nan
         dEdr[-1] = np.nan
         
         #electrons
+        # d/dr (A x u)
         dAudr = (np.roll(A*electrons["u"][:,i-1],-1)-np.roll(A*electrons["u"][:,i-1],1))/(2*dz)#np.roll(a, shift, axis=None)
         dAudr[0] = np.nan
         dAudr[-1] = np.nan
@@ -220,10 +234,12 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         dTedr[0] = np.nan
         dTedr[-1] = np.nan    
         
+        # d/dr (P - rho x u^2) - for E_parallel_short
         dPrhou2 = (np.roll(electrons["P"][:,i-1]-electrons["rho"][:,i-1]*electrons["u"][:,i-1]**2,-1)-np.roll(electrons["P"][:,i-1]-electrons["rho"][:,i-1]*electrons["u"][:,i-1]**2,1))/(2*dz) #was Pe - rhoe*ue**2
         dPrhou2[0] = np.nan
         dPrhou2[-1] = np.nan
         
+        # kappa
         dkdr_e = (np.roll(electrons["kappa"][:,i-1],-1)-np.roll(electrons["kappa"][:,i-1],1))/(2*dz) 
         dkdr_e[0] = np.nan
         dkdr_e[-1] = np.nan 
@@ -233,6 +249,8 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         dAdr[0] = np.nan
         dAdr[-1] = np.nan
       
+        # this is set to 0 as its negliable but remains a function so it can be changed
+        # d/dr x (A x curly k x dt/dr)
         dakTdr =np.zeros(np.size(z_ext))
         dakTedr = np.zeros(np.size(z_ext))
         
@@ -241,13 +259,14 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         E[0:2,i]=pw.extrap_start(E[2:-2,i])
         E[-2:,i]=pw.extrap_end(E[2:-2,i])
     
-        # updated values for next step
-        #ions
+        # now update the values of the variables by using euler central difference to calculate the change based on the transport equations
+        # ions
         for l in range(1,num_ionic_species+1):
             #Mass conservation equation
             ions[l]["rho"][2:-2,i] = pw.density_dt_ion(dt,A[2:-2],ions[l]["S"][2:-2],ions[l]["rho"][2:-2,i-1],dArhou[2:-2,l-1].T)
             ions[l]["rho"][0:2,i]= pw.extrap_start(ions[l]["rho"][2:-2,i])
             ions[l]["rho"][-2:,i]= pw.extrap_end(ions[l]["rho"][2:-2,i]) 
+            # divide by mass to get number density from mass density
             ions[l]["n"][2:-2,i] = ions[l]["rho"][2:-2,i] / ions[l]["mass"]
             ions[l]["n"][0:2,i]=pw.extrap_start(ions[l]["n"][2:-2,i])
             ions[l]["n"][-2:,i]=pw.extrap_end(ions[l]["n"][2:-2,i]) 
@@ -292,11 +311,12 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         electrons["kappa"][0:2,i]= pw.extrap_start(electrons["kappa"][2:-2,i])
         electrons["kappa"][-2:,i]= pw.extrap_end(electrons["kappa"][2:-2,i]) 
         
-        #Electron and ion Flux    
+        # calculate electron and ion flux    
         for w in range(1,num_ionic_species+1):
             ion_flux[2:-2,i,w-1] = ions[w]["n"][2:-2,i]*ions[w]["u"][2:-2,i] * A[2:-2] 
         e_flux[2:-2,i] = pw.electron_flux_e(electrons,i)*A[2:-2]
         
+        # calculate absolute different between each iteration
         for b in range(1,num_ionic_species+1):
             ion_its[2:-2,i,b-1] = np.abs(ions[b]["rho"][2:-2,i]-ions[b]["rho"][2:-2,i-1])/ions[b]["rho"][2:-2,i-1]
             ion_its_T[2:-2,i,b-1] = np.abs(ions[b]["T"][2:-2,i]-ions[b]["T"][2:-2,i-1])/ions[b]["T"][2:-2,i-1]
@@ -327,46 +347,63 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     for v in range(1,num_ionic_species+1):
         ionf[v-1] = ion_flux[ind,-1,v-1] / A[ind]# ion flux at altitude of 10000km
     
-    arc = 10/360 * 2*np.pi*(radius+10000000) #auroral arc of 2 deg width #2
+    width = 2 # seperate variable to change easily for investigation
+    arc = (width)/360 * 2*np.pi*(radius+10000000) #auroral arc of 2 deg width 
     circ = 2*np.pi*(radius+10000000)*np.sin(np.deg2rad(14)) #auroral arc centred on 14deg #2
     
+    # calculate total particle source
     elecTPS = elef*arc*circ*2
     ion1TPS = ionf[0]*arc*circ*2
     ion2TPS = ionf[1]*arc*circ*2 
+    TPS = 2*elecTPS
     print('Total particle source [/s]')
-    print(2*elecTPS)
+    print(TPS)
     
+    # calculate total mass source
     elecTMS = elecTPS * electrons['mass']
     ion1TMS = ion1TPS * ions[1]["mass"]
     ion2TMS = ion2TPS * ions[2]["mass"]
-    
+    TMS = elecTMS+ion1TMS+ion2TMS
     print('Total Mass Source [kg/s]')
-    print(elecTMS+ion1TMS+ion2TMS)
+    print(TMS)
     # breakpoint()
     
     import pandas as pd 
-    carley_graph = pd.read_csv('H:/pw_model/test_runs/march/extracts/nH_plus_extract.csv',index_col=False)
+    carley_graph = pd.read_csv('C:/Users/Knowhow/OneDrive - Lancaster University/pw_model/test_runs/march/extracts/SH_plus_extract.csv',index_col=False)
     carley_graph_x = carley_graph.Distance
-    carley_graph_y = carley_graph.NumberDensity
-    carley_graph2 = pd.read_csv('H:/pw_model/test_runs/march/extracts/nH3_plus_extract.csv',index_col=False)
+    carley_graph_y = carley_graph.MassProductionRate
+    carley_graph2 = pd.read_csv('C:/Users/Knowhow/OneDrive - Lancaster University/pw_model/test_runs/march/extracts/SH3_plus_extract.csv',index_col=False)
     carley_graph_x2 = carley_graph2.Distance
-    carley_graph_y2 = carley_graph2.Velocity
+    carley_graph_y2 = carley_graph2.MassProductionRate
+    carley_graph3 = pd.read_csv('C:/Users/Knowhow/OneDrive - Lancaster University/pw_model/test_runs/march/extracts/Se_extract.csv',index_col=False)
+    carley_graph_x3 = carley_graph3.Distance
+    carley_graph_y3 = carley_graph3.MassProductionRate
+    
     pl.figure(6)
-    pl.subplot(2,1,1)
+    pl.figure(figsize=(10,5)) 
+    pl.subplot(3,1,1)
     pl.plot(carley_graph_x, carley_graph_y)
-    pl.plot(z/1000,ions[1]["n"][2:-2,0])
+    pl.plot(z/1000,ions[1]["S"][2:-2])
     pl.legend(['Carley','Hannah'])
-    pl.xlabel('Distance (km)')
-    pl.ylabel('Number Density(m^-3)')
+    #pl.xlabel('Distance (km)')
+    pl.ylabel('Mass Production Rate (kgm^-3s^-1')
     pl.yscale('log')
     #pl.savefig(folder+'compare_plot_%s_%s.png' %(planet_name,run_name))
     
-    pl.subplot(2,1,2)
+    pl.subplot(3,1,2)
     pl.plot(carley_graph_x2, carley_graph_y2)
-    pl.plot(z/1000,ions[2]["n"][2:-2,0])
+    pl.plot(z/1000,ions[2]["S"][2:-2])
+    pl.legend(['Carley','Hannah'])
+    #pl.xlabel('Distance (km)')
+    pl.ylabel('Mass Production Rate (kgm^-3s^-1')
+    pl.yscale('log')
+    
+    pl.subplot(3,1,3)
+    pl.plot(carley_graph_x3, carley_graph_y3)
+    pl.plot(z/1000,electrons["S"][2:-2])
     pl.legend(['Carley','Hannah'])
     pl.xlabel('Distance (km)')
-    pl.ylabel('Number Density(m^-3)')
+    pl.ylabel('Mass Production Rate (kgm^-3s^-1')
     pl.yscale('log')
     pl.savefig(folder+'compare_plot_%s_%s.png' %(planet_name,run_name))
     
@@ -432,31 +469,34 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         # is tried with Saturn then won't work correctly.  This only saves the
         # first 100 iterations to save space (the its_to_save variable contains
         # the ranges of iterations to save).
-        its_to_save = range(0,100,1)
-        np.savez('polar_wind_output_alliter_{}_{}'.format(planet_name,run_name),
-                n_hplus=ions[1]["n"][2:-2,its_to_save],
-                n_h3plus=ions[2]["n"][2:-2,its_to_save],
-                n_e=electrons["n"][2:-2,its_to_save],
-                T_hplus=ions[1]["T"][2:-2,its_to_save],
-                T_h3plus=ions[2]["T"][2:-2,its_to_save],
-                T_e=electrons["T"][2:-2,its_to_save],
-                u_hplus=ions[1]["u"][2:-2,its_to_save],
-                u_h3plus=ions[2]["n"][2:-2,its_to_save],
-                u_e=electrons["u"][2:-2,its_to_save],
-                kappa_hplus=ions[1]["kappa"][2:-2,its_to_save],
-                kappa_h3plus=ions[2]["kappa"][2:-2,its_to_save],
-                kappa_e=electrons["kappa"][2:-2,its_to_save],
-                flux_hplus=ion_flux[:,its_to_save,0],
-                flux_h3plus=ion_flux[:,its_to_save,1],
-                flux_el=e_flux[:,its_to_save],
-                its_hplus=ion_its[:,its_to_save,0], #added these two so can use them in pickles
-                its_h3plus=ion_its[:,its_to_save,1],
-                z=z, iterations=np.array(its_to_save))
+        # its_to_save = range(0,100,1)
+        # np.savez('polar_wind_output_alliter_{}_{}'.format(planet_name,run_name),
+        #         n_hplus=ions[1]["n"][2:-2,its_to_save],
+        #         n_h3plus=ions[2]["n"][2:-2,its_to_save],
+        #         n_e=electrons["n"][2:-2,its_to_save],
+        #         T_hplus=ions[1]["T"][2:-2,its_to_save],
+        #         T_h3plus=ions[2]["T"][2:-2,its_to_save],
+        #         T_e=electrons["T"][2:-2,its_to_save],
+        #         u_hplus=ions[1]["u"][2:-2,its_to_save],
+        #         u_h3plus=ions[2]["n"][2:-2,its_to_save],
+        #         u_e=electrons["u"][2:-2,its_to_save],
+        #         kappa_hplus=ions[1]["kappa"][2:-2,its_to_save],
+        #         kappa_h3plus=ions[2]["kappa"][2:-2,its_to_save],
+        #         kappa_e=electrons["kappa"][2:-2,its_to_save],
+        #         flux_hplus=ion_flux[:,its_to_save,0],
+        #         flux_h3plus=ion_flux[:,its_to_save,1],
+        #         flux_el=e_flux[:,its_to_save],
+        #         its_hplus=ion_its[:,its_to_save,0], #added these two so can use them in pickles
+        #         its_h3plus=ion_its[:,its_to_save,1],
+        #         z=z, iterations=np.array(its_to_save))
         
         #create and open file
         fid = folder+"polar_wind_output_%s_%s.txt" %(planet_name,run_name)
         f= open(fid,"w+")
         print('Data saved to file: %s ' %fid)
+        f.write("-------RESULTS------- \n")
+        f.write("Total Particle Source: %s\n" %(TPS))
+        f.write("Total Mass Source: %s\n" %(TMS))
         f.write("-------SETUP------- \n")
         f.write("Planet=%s\n" %(planet_name))
         f.write("Time Step=%s\n" %(dt))
@@ -466,6 +506,8 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         f.write("L-Shell=%s\n" %(lshell))
         f.write("Field Aligned Currents removed:1,included:0 =%s\n" %(FAC_flag))
         f.write("Centrifugal Stress  removed:1,included:0 =%s\n" %(CF_flag))
+        f.write("FAC Value: %s\n" %(FAC))
+        f.write("Width: %s\n" %(width))
         f.write("Number of Ionic species=%s\n" %(num_ionic_species))
         f.write("Number of Neutral species=%s\n" %(num_neutral_species))
         for s in range(1,num_ionic_species+1):
