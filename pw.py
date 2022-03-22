@@ -83,7 +83,7 @@ def E_second_term(electrons,ions,dMdt,num_ionic_species,j):
         E_tmp[:,i-1] = (electrons["mass"]/ions[i]["mass"] * ((electrons["u"][:,j-1]-ions[i]["u"][:,j-1])*ions[i]["S"]-dMdt[:,i-1]))       
     return np.sum(E_tmp,axis=1)
 # create empty array of length dMdt, number of ionic species
-# fill as loop, electron mass / ion mass x( electron velocity - ion velocity) * ion ???? - dMdt
+# fill as loop, electron mass / ion mass x( electron velocity - ion velocity) * ion mass production rate - dMdt
 # sum it all up on -1 axis
 # CHECK THIS ONE
 #==============================================================================
