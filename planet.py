@@ -422,7 +422,7 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
     
     # DIPOLE A
 #     cross sectional area A
-    alp= (1/(z[0]**3)) *0.00000001 
+    alp= (1/(z[0]**3)) *0.00000001 #1e8
     A[2:-2] = alp*(z**3) +0.0001
     A[0:2]=alp*(gb_z**3)+0.0001
     A[-2:]=alp*(ge_z**3)+0.0001
@@ -436,21 +436,23 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
     
     #Field aligned currents
 #    idx = (np.abs(z - radius/2)).argmin() #find index of closest point to 1 Rj
-    FAC = 1e-11* (A[2]/A) # 1-7 microAm-1 from Ray+ 2009 #1e-11
-    b_temp = 700
+    FAC = 1e-11* (A[2]/A) # 1-7 microAm-1 from Ray+ 2009 #why then is it e-11?
+    b_temp = 700 #700 for run 1, 200 for subauroral
     
+    # ----------ION TEMPERATURE-------------
     #Initial H+ temperature profile and hence pressure (again log was a test I think so needs investigating again)
-    T_H_plus[2:-2,0] = 500+ 25* (x/20)**2*np.exp(-0.1*(x/20)) +b_temp +200*np.log(0.001*x+1)#25
+    T_H_plus[2:-2,0] = 25* (x/20)**2*np.exp(-0.1*(x/20)) +b_temp +200*np.log(0.001*x+1)
     T_H_plus[0,0]=b_temp
     T_H_plus[1,0]=b_temp
-    T_H_plus[-2:,0]=500+ 25* (ge_x/20)**2*np.exp(-0.1*(ge_x/20)) +b_temp +200*np.log(0.001*ge_x+1)#25
+    T_H_plus[-2:,0]= 25* (ge_x/20)**2*np.exp(-0.1*(ge_x/20)) +b_temp +200*np.log(0.001*ge_x+1)
     
     #Initial H3+ temperature profile and hence pressure
-    T_H3_plus[2:-2,0] = 500+ 30* (x/15)**2*np.exp(-0.1*(x/15)) +b_temp +200*np.log(0.001*x+1)#30
+    T_H3_plus[2:-2,0] = 30* (x/15)**2*np.exp(-0.1*(x/15)) +b_temp +200*np.log(0.001*x+1)
     T_H3_plus[0,0]=b_temp
     T_H3_plus[1,0]=b_temp
-    T_H3_plus[-2:,0]=500+ 30* (ge_x/15)**2*np.exp(-0.1*(ge_x/15)) +b_temp +200*np.log(0.001*ge_x+1)#30
+    T_H3_plus[-2:,0]= 30* (ge_x/15)**2*np.exp(-0.1*(ge_x/15)) +b_temp +200*np.log(0.001*ge_x+1)
     
+    # ----------ION VELOCITY, DEPENDENT ON ION TEMPERATURE-------------
     # initial H+ ion velocity - 1eV proton eV2vel(1,m_H_plus)
     u_H_plus[2:-2,0] = pw.T2v(T_H_plus[2:-2,0],m_H_plus)
     u_H_plus[0,0]=pw.T2v(T_H_plus[0,0],m_H_plus)
@@ -464,123 +466,123 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
     u_H3_plus[1,0]=pw.T2v(T_H3_plus[1,0],m_H3_plus)
     u_H3_plus[-1,0]=pw.T2v(T_H3_plus[-1,0],m_H3_plus)
     u_H3_plus[-2,0]=pw.T2v(T_H3_plus[-2,0],m_H3_plus)
-        
-    #initial H+ ion density - exponential decrease place holder
-#    H_hplus = (1.38064852*10**-23 *T_H_plus[:,0])/(m_H_plus*24.79)
-#    n_H_plus[2:-2,0] = 2*10**9*np.exp(-((z-z[0])/H_hplus[2:-2])) + 6*10**4
-#    n_H_plus[0:2,0] = 2*10**9*np.exp(-((gb_z-z[0])/H_hplus[0:2])) + 6*10**4
-#    n_H_plus[-2:,0] = 2*10**9*np.exp(-((ge_z-z[0])/H_hplus[-2:])) + 6*10**4
     
-    H_plus_floor = 10**5
-    n_H_plus[2:-2,0] = 2*10**10*np.exp(-0.5*(z/z[0])) + H_plus_floor#+ 6*10**7#8*10**4
-    n_H_plus[0:2,0] =2*10**10*np.exp(-0.5*(gb_z/z[0])) + H_plus_floor#+ 6*10**7#8*10**4
-    n_H_plus[-2:,0]=2*10**10*np.exp(-0.5*(ge_z/z[0]))+ H_plus_floor#+ 6*10**7#8*10**4
-    rho_H_plus[2:-2,0] = n_H_plus[2:-2,0] * m_H_plus
+    # ----------ION DENSITY-------------
+    n_H_plus_floor = 4*10**5
+    n_H_plus[2:-2,0] = 2*10**9*np.exp(-0.5*(z/z[0])) + n_H_plus_floor#+ 6*10**7#8*10**4
+    n_H_plus[0:2,0] =2*10**9*np.exp(-0.5*(gb_z/z[0])) + n_H_plus_floor#+ 6*10**7#8*10**4
+    n_H_plus[-2:,0]=2*10**9*np.exp(-0.5*(ge_z/z[0]))+ n_H_plus_floor#+ 6*10**7#8*10**4
+    rho_H_plus[2:-2,0] = n_H_plus[2:-2,0] * m_H_plus # slightly off
     rho_H_plus[0:2,0]=n_H_plus[0:2,0] * m_H_plus
     rho_H_plus[-2:,0]=n_H_plus[-2:,0] * m_H_plus
 
     #initial H3+ ion density - exponential decrease place holder
-    n_H3_plus[2:-2,0] = 1*10**11*np.exp(-0.4*(z/z[0])) +10**8##+ 10**8#+ 1*10**5 #edit these to make sure not falling off to zero
-    n_H3_plus[0:2,0]=1*10**11*np.exp(-0.4*(gb_z/z[0])) +10**8#+ 10**8#+ 1*10**5
-    n_H3_plus[-2:,0]=1*10**11*np.exp(-0.4*(ge_z/z[0])) +10**8#+ 10**8 
-    rho_H3_plus[2:-2,0] = n_H3_plus[2:-2,0] * m_H3_plus
+    n_H3_plus_floor = 5.5*10**5
+    n_H3_plus[2:-2,0] = 1*10**10*np.exp(-0.4*(z/z[0])) + n_H3_plus_floor
+    n_H3_plus[0:2,0]=1*10**10*np.exp(-0.4*(gb_z/z[0])) + n_H3_plus_floor
+    n_H3_plus[-2:,0]=1*10**10*np.exp(-0.4*(ge_z/z[0])) + n_H3_plus_floor
+    rho_H3_plus[2:-2,0] = n_H3_plus[2:-2,0] * m_H3_plus # slightly off
     rho_H3_plus[0:2,0]=n_H3_plus[0:2,0] * m_H3_plus
     rho_H3_plus[-2:,0]=n_H3_plus[-2:,0] * m_H3_plus
      
+    # ----------ELECTRON DENSITY, DEPENDENT ON ION NUMBER DENSITY-------------
     #initial electron density - quasi-neutrality
-    n_e[2:-2,0] = n_H3_plus[2:-2,0]+n_H_plus[2:-2,0]
+    n_e[2:-2,0] = n_H3_plus[2:-2,0]+n_H_plus[2:-2,0] # this is slightly off
     n_e[0:2,0]=n_H3_plus[0:2,0]+n_H_plus[0:2,0]
     n_e[-2:,0]=n_H3_plus[-2:,0]+n_H_plus[-2:,0]
-    rho_e[2:-2,0] = n_e[2:-2,0] * m_e
+    rho_e[2:-2,0] = n_e[2:-2,0] * m_e # slightly off too
     rho_e[0:2,0]=n_e[0:2,0]* m_e
     rho_e[-2:,0]=n_e[-2:,0]* m_e
         
+    # ----------ELECTRON VELOCITY, DEPENDENT ON ION NUMBER DENSITY, VELOCITY AND ELECTRON NUMBER DENSITY-------------
     # initial electron velocity - calcualted from ion velocities and densities - quasinauetrality
-    u_e[2:-2,0] = (1/n_e[2:-2,0]) * (n_H3_plus[2:-2,0] * u_H3_plus[2:-2,0] + n_H_plus[2:-2,0]*u_H_plus[2:-2,0] - FAC[2:-2]/e_charge)
+    u_e[2:-2,0] = (1/n_e[2:-2,0]) * (n_H3_plus[2:-2,0] * u_H3_plus[2:-2,0] + n_H_plus[2:-2,0]*u_H_plus[2:-2,0] - FAC[2:-2]/e_charge) #slightly off
     u_e[0:2,0]=(1/n_e[0:2,0]) * (n_H3_plus[0:2,0] * u_H3_plus[0:2,0] + n_H_plus[0:2,0]*u_H_plus[0:2,0] - FAC[0:2]/e_charge)
     u_e[-2:,0]=(1/n_e[-2:,0]) * (n_H3_plus[-2:,0] * u_H3_plus[-2:,0] + n_H_plus[-2:,0]*u_H_plus[-2:,0] - FAC[-2:]/e_charge)
       
+    # ----------NEUTRAL DENSITY-------------
     #initial neutral H2 density - CONSTANT
-    n_H2[2:-2] = (10**10)*10**6*np.exp(-0.3*(z/z[0])) + 1000000
-    n_H2[0:2]=(10**10)*10**6*np.exp(-0.3*(gb_z/z[0])) + 1000000
-    n_H2[-2:]=(10**10)*10**6*np.exp(-0.3*(ge_z/z[0])) + 1000000
+    n_H2[2:-2] = (10**10)*10**7*np.exp(-0.3*(z/z[0])) + 10000000#7 should be 6
+    n_H2[0:2]=(10**10)*10**7*np.exp(-0.3*(gb_z/z[0])) + 10000000
+    n_H2[-2:]=(10**10)*10**7*np.exp(-0.3*(ge_z/z[0])) + 10000000
     rho_H2[2:-2] = n_H2[2:-2] * m_H2
     rho_H2[0:2]=n_H2[0:2] * m_H2
     rho_H2[-2:]=n_H2[-2:] * m_H2
     
     #initial neutral H density - CONSTANT
-    n_H[2:-2] = (10**9)*10**6*np.exp(-0.3*(z/z[0])) + 100000
-    n_H[0:2]=(10**9)*10**6*np.exp(-0.3*(gb_z/z[0])) + 100000
-    n_H[-2:]=(10**9)*10**6*np.exp(-0.3*(ge_z/z[0])) + 100000
+    n_H[2:-2] = (10**9)*10**7*np.exp(-0.3*(z/z[0])) + 1000000#7 should be 6
+    n_H[0:2]=(10**9)*10**7*np.exp(-0.3*(gb_z/z[0])) + 1000000
+    n_H[-2:]=(10**9)*10**7*np.exp(-0.3*(ge_z/z[0])) + 1000000
     rho_H[2:-2] = n_H[2:-2] * m_H
     rho_H[0:2]=n_H[0:2] * m_H
     rho_H[-2:]=n_H[-2:] * m_H
-    
-    #initial neutral H2O density - CONSTANT
-#    n_H2O[2:-2] = (10**2)*10**6*np.exp(-0.3*(z/z[0])) + 100000
-#    n_H2O[0:2]=(10**2)*10**6*np.exp(-0.3*(gb_z/z[0])) + 100000
-#    n_H2O[-2:]=(10**2)*10**6*np.exp(-0.3*(ge_z/z[0])) + 100000
-#    rho_H2O[2:-2] = n_H2O[2:-2] * m_H2O
-#    rho_H2O[0:2]=n_H2O[0:2] * m_H2O
-#    rho_H2O[-2:]=n_H2O[-2:] * m_H2O
    
     #initial neutral He density - CONSTANT
-    n_He[2:-2] = 10**8*10**6*np.exp(-0.5*(z/z[0])) + 1000000
-    n_He[0:2]=10**8*10**6*np.exp(-0.5*(gb_z/z[0])) + 1000000
-    n_He[-2:]=10**8*10**6*np.exp(-0.5*(ge_z/z[0])) + 1000000
+    n_He[2:-2] = 10**8*10**7*np.exp(-0.5*(z/z[0])) + 10000000 #7 should be 6
+    n_He[0:2]=10**8*10**7*np.exp(-0.5*(gb_z/z[0])) + 10000000
+    n_He[-2:]=10**8*10**7*np.exp(-0.5*(ge_z/z[0])) + 10000000
     rho_He[2:-2] = n_He[2:-2] * m_He
     rho_He[0:2]=n_He[0:2] * m_He
     rho_He[-2:]=n_He[-2:] * m_He
      
+    # ----------ION MASS PRODUCTION RATE-------------
     # H+ mass production rate    - CONSTANT
-    S_H_plus[2:-2] =n_H_plus[2:-2,0] * 0.001 * m_H_plus *np.exp(-z/10000000)
+    S_H_plus[2:-2] =n_H_plus[2:-2,0] * 0.001 * m_H_plus *np.exp(-z/10000000) # slightly off
     S_H_plus[0:2]=n_H_plus[0:2,0] * 0.001* m_H_plus *np.exp(-gb_z/10000000)
     S_H_plus[-2:]=n_H_plus[-2:,0] * 0.001* m_H_plus *np.exp(-ge_z/10000000)
    
     # H3+ mass production rate      - CONSTANT
-    S_H3_plus[2:-2] = n_H3_plus[2:-2,0] * 0.001* m_H3_plus *np.exp(-z/10000000)
+    S_H3_plus[2:-2] = n_H3_plus[2:-2,0] * 0.001* m_H3_plus *np.exp(-z/10000000) # slightly off
     S_H3_plus[0:2]=n_H3_plus[0:2,0] * 0.001* m_H3_plus *np.exp(-gb_z/10000000)
     S_H3_plus[-2:]=n_H3_plus[-2:,0] * 0.001* m_H3_plus *np.exp(-ge_z/10000000)
     S_e[2:-2] = (S_H3_plus[2:-2]/m_H3_plus + S_H_plus[2:-2]/m_H_plus) * m_e
     S_e[0:2] = (S_H3_plus[0:2]/m_H3_plus + S_H_plus[0:2]/m_H_plus) * m_e
     S_e[-2:] = (S_H3_plus[-2:]/m_H3_plus + S_H_plus[-2:]/m_H_plus) * m_e  
-    
-    P_H_plus[2:-2,0] = pw.plasma_pressure(n_H_plus[2:-2,0],k_b,T_H_plus[2:-2,0])
+
+    # ----------ION PRESSURE----------
+    P_H_plus[2:-2,0] = pw.plasma_pressure(n_H_plus[2:-2,0],k_b,T_H_plus[2:-2,0]) # slightly off
     P_H_plus[0:2,0]= pw.plasma_pressure(n_H_plus[0:2,0],k_b,T_H_plus[0:2,0])
     P_H_plus[-2:,0]= pw.plasma_pressure(n_H_plus[-2:,0],k_b,T_H_plus[-2:,0])
         
-    P_H3_plus[2:-2,0] = pw.plasma_pressure(n_H3_plus[2:-2,0],k_b,T_H3_plus[2:-2,0])
+    P_H3_plus[2:-2,0] = pw.plasma_pressure(n_H3_plus[2:-2,0],k_b,T_H3_plus[2:-2,0]) # slightly off
     P_H3_plus[0:2,0]= pw.plasma_pressure(n_H3_plus[0:2,0],k_b,T_H3_plus[0:2,0])
     P_H3_plus[-2:,0]= pw.plasma_pressure(n_H3_plus[-2:,0],k_b,T_H3_plus[-2:,0])
        
+    # ----------ELECTRON TEMPERAURE, DEPENDENT ON ION TEMPERATURES----------
     #Initial electron temperature profile and hence pressure 
-    T_e[2:-2,0] = T_H_plus[2:-2,0] +T_H3_plus[2:-2,0]
+    T_e[2:-2,0] = T_H_plus[2:-2,0] +T_H3_plus[2:-2,0] # matches up
     T_e[0:2,0]=T_H_plus[0:2,0] +T_H3_plus[0:2,0]
     T_e[-2:,0]=T_H_plus[-2:,0] +T_H3_plus[-2:,0]
     
-    P_e[2:-2,0] = pw.plasma_pressure(n_e[2:-2,0],k_b,T_e[2:-2,0])
+    # ----------ELECTRON PRESSURE,DEPENDENT ON ELECTRON PRESSURE----------
+    P_e[2:-2,0] = pw.plasma_pressure(n_e[2:-2,0],k_b,T_e[2:-2,0]) # slightly off
     P_e[0:2,0]=pw.plasma_pressure(n_e[0:2,0],k_b,T_e[0:2,0])
     P_e[-2:,0]=pw.plasma_pressure(n_e[-2:,0],k_b,T_e[-2:,0])
        
+    # ----------NEUTRAL TEMPERATURE----------
     #Initial neutral temperature profile and hence pressure
-    T_neut[2:-2] = np.ones(np.size(x))* 1200
+    T_neut[2:-2] = np.ones(np.size(x))* 1200 # slightly off, by like fractional amount, likely due to grab
     T_neut[0:2]=np.ones(np.size(gb_x))* 1200
     T_neut[-2:]=np.ones(np.size(ge_x))* 1200
+    # ----------NEUTRAL VELOCITY, DEPENDENT ON NEUTRAL TEMPERATURE----------
     u_neut = np.zeros(np.size(T_neut))
+    # ----------NEUTRAL PRESSURE, DEPENDENT ON NEUTRAL TEMPERATURE, NEUTRAL NUMBER DENSITY----------
     P_neut[2:-2] = (n_H2[2:-2]+n_He[2:-2]+n_H[2:-2]) * k_b * T_neut[2:-2]
     P_neut[0:2]=(n_H2[0:2]+n_He[0:2]+n_H[0:2]) * k_b * T_neut[0:2]
     P_neut[-2:]=(n_H2[-2:]+n_He[-2:]+n_H[-2:]) * k_b * T_neut[-2:]
           
+    
+    # ----------KAPPA, DEPENDENT ON TEMPERATURE----------
     # heat conductivities
-    kappa_H_plus[2:-2,0] = pw.heat_conductivity(T_H_plus[2:-2,0],e_charge,m_H_plus,m_p)
+    kappa_H_plus[2:-2,0] = pw.heat_conductivity(T_H_plus[2:-2,0],e_charge,m_H_plus,m_p) #weird shape?
     kappa_H_plus[0:2,0]=pw.heat_conductivity(T_H_plus[0:2,0],e_charge,m_H_plus,m_p)
     kappa_H_plus[-2:,0]=pw.heat_conductivity(T_H_plus[-2:,0],e_charge,m_H_plus,m_p)
     
-    kappa_H3_plus[2:-2,0] = pw.heat_conductivity(T_H3_plus[2:-2,0],e_charge,m_H3_plus,m_p)
+    kappa_H3_plus[2:-2,0] = pw.heat_conductivity(T_H3_plus[2:-2,0],e_charge,m_H3_plus,m_p) #weird shape?
     kappa_H3_plus[0:2,0]=pw.heat_conductivity(T_H3_plus[0:2,0],e_charge,m_H3_plus,m_p)
     kappa_H3_plus[-2:,0]=pw.heat_conductivity(T_H3_plus[-2:,0],e_charge,m_H3_plus,m_p)
     
-    kappa_e[2:-2,0] = pw.heat_conductivity_electrons(T_e[2:-2,0],e_charge,gamma)
+    kappa_e[2:-2,0] = pw.heat_conductivity_electrons(T_e[2:-2,0],e_charge,gamma) # fine
     kappa_e[0:2,0]=pw.heat_conductivity_electrons(T_e[0:2,0],e_charge,gamma)
     kappa_e[-2:,0]=pw.heat_conductivity_electrons(T_e[-2:,0],e_charge,gamma)
     
@@ -665,16 +667,6 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
             "P":P_neut,
             "lambda":lambda_H
             }
-#    #Water
-#            4:{"name":"H2O",
-#               "mass":m_H2O,
-#            "T": T_neut,
-#            "u": u_neut,
-#            "n": n_H2O,
-#            "rho": rho_H2O,
-#            "P":P_neut,
-#            "lambda":lambda_H2O
-#            }
     }
     
     
