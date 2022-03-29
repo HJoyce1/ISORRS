@@ -21,36 +21,72 @@ def plot_me_log(x,y,xlabel,ylabel,grid):
     pl.grid(grid)
  
     #plot specifically for results
-def results_plot(z,num_ion,e_charge,E,ion_dict,electron_dict,ac,ag,e_flux,ion_flux):
+def results_plot(z,z_ext,radius,num_ion,e_charge,E,ion_dict,electron_dict,ac,ag,e_flux,ion_flux):
     import matplotlib.pyplot as pl
     pl.figure(figsize=(8,10))
-    pl.subplot(4,2,1)
-    plot_me_quick(z/1000,E,'Distance Along Field Line (km)','E Parallel (V/m)','on')
     
-    pl.subplot(4,2,2)
-    plot_me_quick(z/1000,electron_dict["n"][2:-2,-1],'Distance Along Field Line (km)','Number Density (/m^3)','on')
-    for i in range(1,num_ion+1):
-        plot_me_quick(z/1000,ion_dict[i]["n"][2:-2,-1],'Distance Along Field Line (km)','Number Density (/m^3)','on')
+    ax1 = pl.subplot(4,1,1)
+    pl.plot(z/1000,(E*4)/1e-7,linestyle='-',color=[0,0,0])
+    pl.ylabel('a) $E_{\parallel}$ $(V$ $m^{-1}) $x$ 10^{-7}$')
+    pl.xlim([0,z_ext[-1]/1000])
+    ax1.set_xlabel('')
+    ax1.xaxis.set_ticklabels([])
+    pl.grid('on') 
+    ax2 = ax1.twiny()
+    ax2.plot(z/radius,(E*4)/1e-7,linestyle= '-',color=[0,0,0])
+    ax2.set_xlabel('Distance Along Field Line \n (Planetary Radii)')
+    ax2.set_xlim([0,z_ext[-1]/radius])
+    
+    ax3 = pl.subplot(4,1,2)
+    pl.plot(z/1000,((e_charge/ion_dict[1]["mass"])*(E)),linestyle= '-',color=[0,0.2,0.5])
+    pl.plot(z/1000,((e_charge/ion_dict[2]["mass"])*(E)),linestyle= '-',color=[0.2,0.6,1])
+    pl.plot(z/1000,ac,linestyle= '--',color=[0.4,0,0.8])
+    pl.plot(z/1000,ag,linestyle= '-.',color=[0,0.6,0.6])
+    pl.ylabel('b) Acceleration Terms \n $(m$ $s^{-2})$')
+    pl.xlim([0,z_ext[-1]/1000])
+    pl.grid('on') 
+    ax4 = ax3.twiny()
+    ax4.plot(z/radius,(e_charge/ion_dict[1]["mass"])*(E),linestyle='-',color=[0,0.2,0.5])
+    ax4.set_xlim([0,z_ext[-1]/radius])
+    ax3.set_xlabel('')
+    ax3.xaxis.set_ticklabels([])
+    ax4.set_xlabel('')
+    ax4.xaxis.set_ticklabels([])
+    ax3.legend(['$H^+$ Electric Field','$H_3^+$ Electric Field','Centrifugal', 'Gravitational'])
+            
+        
+    ax5 = pl.subplot(4,1,3)
     pl.yscale('log')
-    
-    pl.subplot(4,2,3)
-    for j in range(1,num_ion+1):
-        plot_me_quick(z/1000,ion_dict[j]["T"][2:-2,-1],'Distance Along Field Line (km)','Temperature (K)','on')
+    pl.plot(z/1000,e_flux[2:-2,-1],color=[0.2,1,0.2])
+    pl.ylabel('c) Electron Flux \n $(m^{-2}$ $s^{-1})$ x A $(m^2)$')
+    pl.xlim([0,z_ext[-1]/1000])
+    pl.grid('on') 
+    ax6 = ax5.twiny()
+    ax6.plot(z/radius,e_flux[2:-2,-1],color=[0.2,1,0.2])
+    ax6.set_xlim([0,z_ext[-1]/radius])
+    ax5.set_xlabel('')
+    ax5.xaxis.set_ticklabels([])
+    ax6.set_xlabel('')
+    ax6.xaxis.set_ticklabels([])
+    ax5.legend(['$e^-$'])
+
+    ax7 = pl.subplot(4,1,4)
+    pl.yscale('log')
+    pl.plot(z/1000,ion_flux[2:-2,-1,0],color=[0,0.2,0.5])
+    pl.plot(z/1000,ion_flux[2:-2,-1,1],color=[0.2,0.6,1])    
+    pl.ylabel('d) Ion Flux \n $(m^{-2}$ $s^{-1})$ x A $(m^2)$')
+    pl.xlabel('Distance Along Field Line (km)')
+    pl.xlim([0,z_ext[-1]/1000])
+    pl.grid('on') 
+    ax8 = ax7.twiny()
+    ax8.plot(z/radius,ion_flux[2:-2,-1,0],color=[0,0.2,0.5])
+    ax8.set_xlabel('')
+    ax8.set_xlim([0,z_ext[-1]/radius])
+    ax8.xaxis.set_ticklabels([])
+    ax7.legend(['$H^+$','$H_3^+$'])
+
         
-    pl.subplot(4,2,4)
-    for k in range(1,num_ion+1):
-        plot_me_quick(z/1000,(e_charge/ion_dict[k]["mass"])*E,'Distance Along Field Line (km)','Acceleration Terms \n(m s^-2)','on')
-    plot_me_quick(z/1000,ac,'Distance Along Field Line (km)','Acceleration Terms \n(m s^-2)','on')
-    plot_me_quick(z/1000,ag,'Distance Along Field Line (km)','Acceleration Terms \n(m s^-2)','on')  
-        
-    pl.subplot(4,2,5)
-    plot_me_log(z/1000,e_flux[2:-2,-1],'Distance Along Field Line (km)','Electron Flux \n(m^-2 s^-1) x A (m^2) ','on')
-    
-    for k in range(1,num_ion+1):
-        pl.subplot(4,2,k+5)
-        plot_me_log(z/1000,ion_flux[2:-2,-1,k-1],'Distance Along Field Line (km)','%s Flux \n(m^-2 s^-1)x A (m^2)' %(ion_dict[k]["name"]),'on')
-    
-    pl.subplots_adjust(hspace=0.5,wspace=0.5)
+    pl.subplots_adjust(hspace=0.0,wspace=0.5)
     pl.suptitle("Results")
 
 def species_plot(z,z_ext,ion_dict,radius):
