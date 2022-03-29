@@ -3,9 +3,9 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     import numpy as np
     import matplotlib.pyplot as pl
     import dipolefield
-    import pw_edit2 as pw
-    import planet_edit2 as planet
-    import pw_plotting_tools_editt2 as pwpl
+    import pw as pw
+    import planet as planet
+    import pw_plotting_tools as pwpl
     # ---------------------------------Start Main-------------------------------------
     # Main folder to save plots and data to
     folder = 'C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs/easter/'
