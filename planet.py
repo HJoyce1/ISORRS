@@ -436,7 +436,7 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
     
     #Field aligned currents
 #    idx = (np.abs(z - radius/2)).argmin() #find index of closest point to 1 Rj
-    FAC = 1e-11* (A[2]/A) # 1-7 microAm-1 from Ray+ 2009 #why then is it e-11?
+    FAC = 3e-11* (A[2]/A) # 1-7 microAm-1 from Ray+ 2009 #why then is it e-11?
     b_temp = 700 #700 for run 1, 200 for subauroral
     
     # ----------ION TEMPERATURE-------------
@@ -468,7 +468,7 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
     u_H3_plus[-2,0]=pw.T2v(T_H3_plus[-2,0],m_H3_plus)
     
     # ----------ION DENSITY-------------
-    n_H_plus_floor = 4*10**5
+    n_H_plus_floor = 6*10**7##4*10**5
     n_H_plus[2:-2,0] = 2*10**9*np.exp(-0.5*(z/z[0])) + n_H_plus_floor#+ 6*10**7#8*10**4
     n_H_plus[0:2,0] =2*10**9*np.exp(-0.5*(gb_z/z[0])) + n_H_plus_floor#+ 6*10**7#8*10**4
     n_H_plus[-2:,0]=2*10**9*np.exp(-0.5*(ge_z/z[0]))+ n_H_plus_floor#+ 6*10**7#8*10**4
@@ -477,7 +477,7 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
     rho_H_plus[-2:,0]=n_H_plus[-2:,0] * m_H_plus
 
     #initial H3+ ion density - exponential decrease place holder
-    n_H3_plus_floor = 5.5*10**5
+    n_H3_plus_floor = + 10**8##5.5*10**5
     n_H3_plus[2:-2,0] = 1*10**10*np.exp(-0.4*(z/z[0])) + n_H3_plus_floor
     n_H3_plus[0:2,0]=1*10**10*np.exp(-0.4*(gb_z/z[0])) + n_H3_plus_floor
     n_H3_plus[-2:,0]=1*10**10*np.exp(-0.4*(ge_z/z[0])) + n_H3_plus_floor
@@ -502,25 +502,25 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
       
     # ----------NEUTRAL DENSITY-------------
     #initial neutral H2 density - CONSTANT
-    n_H2[2:-2] = (10**10)*10**7*np.exp(-0.3*(z/z[0])) + 10000000#7 should be 6
-    n_H2[0:2]=(10**10)*10**7*np.exp(-0.3*(gb_z/z[0])) + 10000000
-    n_H2[-2:]=(10**10)*10**7*np.exp(-0.3*(ge_z/z[0])) + 10000000
+    n_H2[2:-2] = (10**10)*10**6*np.exp(-0.3*(z/z[0])) + 10000000#7 should be 6
+    n_H2[0:2]=(10**10)*10**6*np.exp(-0.3*(gb_z/z[0])) + 10000000
+    n_H2[-2:]=(10**10)*10**6*np.exp(-0.3*(ge_z/z[0])) + 10000000
     rho_H2[2:-2] = n_H2[2:-2] * m_H2
     rho_H2[0:2]=n_H2[0:2] * m_H2
     rho_H2[-2:]=n_H2[-2:] * m_H2
     
     #initial neutral H density - CONSTANT
-    n_H[2:-2] = (10**9)*10**7*np.exp(-0.3*(z/z[0])) + 1000000#7 should be 6
-    n_H[0:2]=(10**9)*10**7*np.exp(-0.3*(gb_z/z[0])) + 1000000
-    n_H[-2:]=(10**9)*10**7*np.exp(-0.3*(ge_z/z[0])) + 1000000
+    n_H[2:-2] = (10**9)*10**6*np.exp(-0.3*(z/z[0])) + 1000000#7 should be 6
+    n_H[0:2]=(10**9)*10**6*np.exp(-0.3*(gb_z/z[0])) + 1000000
+    n_H[-2:]=(10**9)*10**6*np.exp(-0.3*(ge_z/z[0])) + 1000000
     rho_H[2:-2] = n_H[2:-2] * m_H
     rho_H[0:2]=n_H[0:2] * m_H
     rho_H[-2:]=n_H[-2:] * m_H
    
     #initial neutral He density - CONSTANT
-    n_He[2:-2] = 10**8*10**7*np.exp(-0.5*(z/z[0])) + 10000000 #7 should be 6
-    n_He[0:2]=10**8*10**7*np.exp(-0.5*(gb_z/z[0])) + 10000000
-    n_He[-2:]=10**8*10**7*np.exp(-0.5*(ge_z/z[0])) + 10000000
+    n_He[2:-2] = 10**8*10**6*np.exp(-0.5*(z/z[0])) + 10000000 #7 should be 6
+    n_He[0:2]=10**8*10**6*np.exp(-0.5*(gb_z/z[0])) + 10000000
+    n_He[-2:]=10**8*10**6*np.exp(-0.5*(ge_z/z[0])) + 10000000
     rho_He[2:-2] = n_He[2:-2] * m_He
     rho_He[0:2]=n_He[0:2] * m_He
     rho_He[-2:]=n_He[-2:] * m_He
