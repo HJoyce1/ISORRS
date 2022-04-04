@@ -1,17 +1,14 @@
-# Polar Outer Planet Ionospheric Outflow Model
+# IonoSpheric Outflow in Rapidly Rotating Systems (ISORRS) Model
 
-Repository for the development of the Polar Outer Planet Ionospheric Outflow model <br>
+Repository for the development of the model <br>
 More scientfic information available in doi.org/10.1029/2019JA027728 and doi.org/10.1029/2019JA027727 <br>
 This README file is focused more on the construction of and how to run the model <br>
-(yes I know polar is spelled wrong in the repo name, its a feature now, oops) <br>
-(Also absolutely open to calling it the POPI Model now, it's cute?) <br>
-(Also definitely requires some updating which I will do just so it's readable and PEP8 (ish))
 
 ## Get Started!
-You can run the `pw_20190502.py` as a function or from command line with arguments:
-`python3 pw_20190502.py 'jupiter' 0.01 100 3 33 0 0 1 0 'anything'`
+You can run the `pw_1D_singlefieldline_FAC.py` as a function or from command line with arguments:
+`python3 pw_1D_singlefieldline_FAC.py 'jupiter' 0.01 100 3 25 0 0 1 1 'save file name'`
 Check the docstring to see the argument meanings.
-Same with the other two versions.
+Same with the other versions of 'MAIN' modules.
 
 ## Contents
 ### dipolefield.py
@@ -21,18 +18,24 @@ Module developed by Dave Constable at Lancaster University (2019)
 Module contains intial conditions/functions and general variables associated with either Jupiter or Saturn.
 
 ### pw_1Dsinglefieldline.py
-Module set up to run a series of iterations along a single field line at given position on planet.
+MAIN Module set up to run a series of iterations along a single field line at given position on planet.
+
+### pw_1Dsinglefieldline_FAC.py
+MAIN Module resulting from pw_1Dsinglefieldline.py and pw_equatorialFlux.py being spliced together. Currently a work in progress. Represents current file I am working from. 
 
 ### pw_20190502.py
-Generic file to run overall - need to look into this more. I believe this was written so I could print out all
-the files needed for the repository for the acknowledgements kept in the new Lancaster doi stuff. 
+MAIN Generic file to run overall - need to look into this more. I believe this was written so Carley could print out all
+the files needed for the repository for the acknowledgements kept in the new Lancaster DOI stuff. 
 
 ### pw_equatorialFlux.py
-Module which calculates the amount of flux all the way out where the magnetic field crosses the equatorial region.
+MAIN Module which calculates the amount of flux all the way out where the magnetic field crosses the equatorial region.
 Obviously with no Dungey and Vasyliunas cycle consideration.
 
 ### pw_plotting_tools.py
 Module to aid in plotting.
+
+### pw_plotting_tools_x4.py
+Module to aid in plotting with E field and acceleration terms for ions multiplied by 4 in overview plots to represent results in the Jupiter paper. Not confident with why this has been done, but this file exists just for example for now.
 
 ### pw.py
 Module containing the physical calculations used in the model.
