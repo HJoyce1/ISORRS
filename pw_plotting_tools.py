@@ -26,14 +26,14 @@ def results_plot(z,z_ext,radius,num_ion,e_charge,E,ion_dict,electron_dict,ac,ag,
     pl.figure(figsize=(8,10))
     
     ax1 = pl.subplot(4,1,1)
-    pl.plot(z/1000,(E*4)/1e-7,linestyle='-',color=[0,0,0])
+    pl.plot(z/1000,(E)/1e-7,linestyle='-',color=[0,0,0])
     pl.ylabel('a) $E_{\parallel}$ $(V$ $m^{-1}) $x$ 10^{-7}$')
     pl.xlim([0,z_ext[-1]/1000])
     ax1.set_xlabel('')
     ax1.xaxis.set_ticklabels([])
     pl.grid('on') 
     ax2 = ax1.twiny()
-    ax2.plot(z/radius,(E*4)/1e-7,linestyle= '-',color=[0,0,0])
+    ax2.plot(z/radius,(E)/1e-7,linestyle= '-',color=[0,0,0])
     ax2.set_xlabel('Distance Along Field Line \n (Planetary Radii)')
     ax2.set_xlim([0,z_ext[-1]/radius])
     
