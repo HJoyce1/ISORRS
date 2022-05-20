@@ -1,8 +1,10 @@
-'''
-Code written by Carley Martin
+#  Function for plotting
+# Part of the lancaster polar wind model
+# Author: C.J. Martin @ Lancaster University
+# 2019
 
-Updated by Hannah Joyce
-'''
+# Updated by H. Joyce, 2021
+#==================================================
 
 #Personalised plotting function to quickly check on things
 def plot_me_quick(x,y,xlabel,ylabel,grid):
