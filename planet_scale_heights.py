@@ -34,7 +34,7 @@ def saturn(its,phys_consts,z,z_ext,x,ghosts):
     g = 10.44 #graviational acceleration
     
     # combine to read out
-    consts=[radius, mass_planet,b0,rot_period,dipole_offset,g]
+    consts=[radius,mass_planet,b0,rot_period,dipole_offset,g]
     
     # physical constants (read in)
     m_e = phys_consts[0]
@@ -348,7 +348,7 @@ def saturn(its,phys_consts,z,z_ext,x,ghosts):
 #JUPITER SECTION edited by H.S. Joyce @ Lancaster University
 
 #==============================================================================
-def jupiter(its,phys_consts,z,z_ext,x,ghosts):
+def jupiter(its,phys_consts,z,z_ext,x,ghosts,b_temp,j):
     import numpy as np
     import pw
     
@@ -427,17 +427,9 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
     A[0:2]=alp*(gb_z**3)+0.0001
     A[-2:]=alp*(ge_z**3)+0.0001
 
-    
-    # JRM09 Mag field A
-#    p = np.array([  2.58766763e-22,  -6.62512843e-19,   7.93276617e-16, -3.33492496e-13,   9.01334060e-11,   7.10497874e-09])
-#    At[2:-2] = np.polyval(p, x)
-#    At[0:2]=np.polyval(p,gb_x)
-#    At[-2:]=np.polyval(p,ge_x)
-    
-    #Field aligned currents
-#    idx = (np.abs(z - radius/2)).argmin() #find index of closest point to 1 Rj
-    FAC = 3.7e-11 *(A[2]/A) # 1-7 microAm-1 from Ray+ 2009 # 7 for auroral, 3 for run 1
-    b_temp = 2000 #700 for run 1, 200 for subauroral and nonauroral, 2000 for auroral
+
+    FAC = j *(A[2]/A) 
+
     
     # ----------ION TEMPERATURE-------------
     #Initial H+ temperature profile and hence pressure (again log was a test I think so needs investigating again)
@@ -672,4 +664,4 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts):
     }
     
     
-    return consts,A,FAC,ions,electrons,neutrals
+    return consts,A,ions,electrons,neutrals
