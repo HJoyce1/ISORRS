@@ -17,11 +17,17 @@ Module developed by Dave Constable at Lancaster University (2019)
 ### planet.py
 Module contains intial conditions/functions and general variables associated with either Jupiter or Saturn.
 
+### planet_scale_heights.py
+Updated version of planet with an updated number density profile to better encorporate scale heights.
+
 ### pw_1Dsinglefieldline.py
 MAIN Module set up to run a series of iterations along a single field line at given position on planet.
 
 ### pw_1Dsinglefieldline_FAC.py
-MAIN Module resulting from pw_1Dsinglefieldline.py and pw_equatorialFlux.py being spliced together. Currently a work in progress. Represents current file I am working from. 
+MAIN Module resulting from pw_1Dsinglefieldline.py and pw_equatorialFlux.py being spliced together. Works a little better than pw_1Dsinglefieldline.py for looking at Jupiter. Currently a work in progress.
+
+### pw_1Dsinglefieldline_asymmetries.py
+MAIN Module created to iterate over different conditons in the auroral region. Currently allows for temperature, width and field-aligned current strength to be varied over 'dawn' or 'dusk' conditions.
 
 ### pw_20190502.py
 MAIN Generic file to run overall - need to look into this more. I believe this was written so Carley could print out all
@@ -33,6 +39,9 @@ Obviously with no Dungey and Vasyliunas cycle consideration.
 
 ### pw_plotting_tools.py
 Module to aid in plotting.
+
+### pw_plotting_tools_cb.py
+Colourblind friendly version of pw_plotting_tools with no grid lines and inward tick markers.
 
 ### pw_plotting_tools_x4.py
 Module to aid in plotting with E field and acceleration terms for ions multiplied by 4 in overview plots to represent results in the Jupiter paper. Not confident with why this has been done, but this file exists just for example for now.
