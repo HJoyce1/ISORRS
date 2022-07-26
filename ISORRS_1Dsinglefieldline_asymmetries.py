@@ -4,7 +4,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     import matplotlib.pyplot as pl
     import dipolefield
     import pw as pw
-    import planet_scale_heights as planet
+    import planet_scales as planet
     import pw_plotting_tools_cb as pwpl
     from matplotlib.ticker import FormatStrFormatter #need this for plotting extra significant figures on axes (ie FACs)
     #import inputs
@@ -14,8 +14,8 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     #folder = 'C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs_asymmetries/tests/'
     
     # section to define inputs for this run
-    asymmetry = 'Temperature'
-    local_time = 'Dawn'
+    asymmetry = 'FACs'
+    local_time = 'Dusk'
     #-------------------------------Wrapper for Asymmetries--------------------------
     
     # create empty arrays for results
@@ -38,7 +38,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
         
     elif asymmetry == 'Temperature' and local_time == 'Dusk':
         # set range of temperatures to iterate over
-        temps = np.arange(500,2100,100)
+        temps = np.arange(500,1700,100)
         # set static variables
         width = 2.7
         j = 1e-11
@@ -112,7 +112,8 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
         elif asymmetry == 'Width':
             width = number
         else: 
-            j = number
+            j = (number)*1e-11
+            print(j)
             
         
     #second loop to iterate over ionospheric latitude for 100 field lines between the latitude limits
@@ -120,8 +121,8 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
         # ---------------------------------Grid set up-------------------------------------    
         #800 spatial grids per Rs roughly - a bit more to round the numbers
             inner = 1400000  #lower boundary, 1400km -> 140000m
-            numpoints = int(rs * 800) 
-            dz = 75000.0 # grid spacing, 75km -> 75000m
+            numpoints = int(rs * 8000) 
+            dz = 7500.0 # grid spacing, 75km -> 75000m
             
             #set up grid
             z=np.zeros([numpoints,])
@@ -396,7 +397,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
             
             
             #Calculating total particle source
-            ind = np.max(np.where(z<25000000)) +1 # at altitude of 25000km
+            ind = np.max(np.where(z<40000000)) +1 # at altitude of 25000km
             
             #elef = e_flux_tmp[ind,-1]/A[ind] # electron flux at altitude of 25000km
             elef = e_flux[ind,-1] # electron flux at specific point
@@ -405,8 +406,8 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
                 ionf[v-1] = ion_flux[ind,-1,v-1]#/ A[ind]# ion flux at altitude of 25000km
             
         
-            arc = width/360 * 2*np.pi*(radius+25000000) #auroral arc of 2 deg width
-            circ = 2*np.pi*(radius+25000000)*np.sin(np.deg2rad(colat)) #auroral arc centred on 14deg
+            arc = width/360 * 2*np.pi*(radius+40000000) #auroral arc of 2 deg width
+            circ = 2*np.pi*(radius+40000000)*np.sin(np.deg2rad(colat)) #auroral arc centred on 14deg
             # circ is angle between centre of planet and the arc
             
             # calculate total particle source
@@ -438,11 +439,11 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     if plots ==1:
         #        pl.figure(1)
             pwpl.input_plot(ions,electrons,neutrals,z,z_ext,A,radius)  
-            pl.savefig(folder+'inputs_plot_%s_%s.png' %(planet_name,run_name))
+            pl.savefig(folder+'inputs_plot_%s_%s.pdf' %(planet_name,run_name))
             print('Plots on screen')
         #        pl.figure(2)    
             pwpl.results_plot(z,z_ext,radius,num_ionic_species,e_charge,E[2:-2,-1],ions,electrons,ac,ag,e_flux,ion_flux) 
-            pl.savefig(folder+'overview_results_plot_%s_%s.png' %(planet_name,run_name))
+            pl.savefig(folder+'overview_results_plot_%s_%s.pdf' %(planet_name,run_name))
         #        pl.figure(3)
         #     pwpl.species_plot(z,z_ext,electrons,radius)
         #     pl.savefig(folder+'species_plot_%s_electrons_%s.png' %(planet_name,run_name))
@@ -553,10 +554,10 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
         f.write("L-Shell=%s\n" %(lshell))
         f.write("Field Aligned Currents removed:1,included:0 =%s\n" %(FAC_flag))
         f.write("Centrifugal Stress  removed:1,included:0 =%s\n" %(CF_flag))
-        #f.write("Temperature (K): %s\n" %(b_temp))
-        f.write("Temperatures (K): %s\n" %(temps))
-        #f.write("Initial FAC Strengths (A): %s\n" %(FACS))
-        f.write("Initial FAC Strength (A): %s\n" %(FAC))
+        f.write("Temperature (K): %s\n" %(b_temp))
+        #f.write("Temperatures (K): %s\n" %(temps))
+        f.write("Initial FAC Strengths (A): %s\n" %(FACS))
+        #f.write("Initial FAC Strength (A): %s\n" %(FAC))
         f.write("Width (degrees): %s\n" %(width))
         #f.write("Widths (degrees): %s\n" %(widths))
         f.write("Number of Ionic species=%s\n" %(num_ionic_species))
