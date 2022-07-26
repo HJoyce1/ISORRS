@@ -5,8 +5,8 @@ More scientfic information available in doi.org/10.1029/2019JA027728 and doi.org
 This README file is focused more on the construction of and how to run the model <br>
 
 ## Get Started!
-You can run the `pw_1D_singlefieldline_FAC.py` as a function or from command line with arguments:
-`python3 pw_1D_singlefieldline_FAC.py 'jupiter' 0.01 100 3 25 0 0 1 1 'save file name'`
+You can run the `ISORRS_1D_singlefieldline.py` as a function or from command line with arguments:
+`python3 ISORRS_1D_singlefieldline_FAC.py 'jupiter' 0.01 100 3 25 0 0 1 1 'save file name'`
 Check the docstring to see the argument meanings.
 Same with the other versions of 'MAIN' modules.
 
