@@ -18,13 +18,10 @@ Module developed by Dave Constable at Lancaster University (2019)
 Module contains intial conditions/functions and general variables associated with either Jupiter or Saturn.
 
 ### planet_scale_heights.py
-Updated version of planet with an updated number density profile to better encorporate scale heights.
+Updated version of planet with an updated number density profile to better incorporate scale heights in (currently only) Jupiter's atmosphere.
 
-### pw_1Dsinglefieldline.py
+### ISORRS_1Dsinglefieldline.py
 MAIN Module set up to run a series of iterations along a single field line at given position on planet.
-
-### pw_1Dsinglefieldline_FAC.py
-MAIN Module resulting from pw_1Dsinglefieldline.py and pw_equatorialFlux.py being spliced together. Works a little better than pw_1Dsinglefieldline.py for looking at Jupiter. Currently a work in progress.
 
 ### pw_1Dsinglefieldline_asymmetries.py
 MAIN Module created to iterate over different conditons in the auroral region. Currently allows for temperature, width and field-aligned current strength to be varied over 'dawn' or 'dusk' conditions.
