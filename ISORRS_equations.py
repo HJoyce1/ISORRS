@@ -1,4 +1,4 @@
-# Functions for polar wind model
+# Functions for ISORRS model
 # All in SI units unless specified
 # Part of the lancaster polar wind model
 # Author: C.J. Martin @ Lancaster University
@@ -138,7 +138,7 @@ def velocity_dt_ion(dt,A,rho,rho_1,dFdr,dPdr,m_i,E,e_charge,ag,dMdt,u,S,ac):
 #ref: Gombozi+1985, Glocer+ 2007 etc.
     return ((dt/(A*rho_1))*(-dFdr - (A*dPdr) +(A*rho*((e_charge/m_i)*E - ag + ac)) + \
            A*dMdt + A*u*S)+((rho*u)/rho_1))
-        # ((dt/ cross section areax rho_1? )) * (-dFdr - (area*dPdr) + (area* mass density*((electron charge/ion mass)* E field
+        # ((dt/ cross section areax rho_1? )) * (-dArhou2 - (area*dPdr) + (area* mass density*((electron charge/ion mass)* E field
         # - gravitational acceleration  + centrifugal acceleration)) + area x dMdt + area x velocity x mass production) +
         # ((mass density x velocity/ rho_1
         # CHECK THIS
