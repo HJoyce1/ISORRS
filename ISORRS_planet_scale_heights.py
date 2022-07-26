@@ -433,16 +433,16 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts,b_temp,j):
     
     # ----------ION TEMPERATURE-------------
     #Initial H+ temperature profile and hence pressure (again log was a test I think so needs investigating again)
-    T_H_plus[2:-2,0] = 25* (x/20)**2*np.exp(-0.1*(x/20)) +b_temp +200*np.log(0.001*x+1)
+    T_H_plus[2:-2,0] = 25* (x/200)**2*np.exp(-0.1*(x/200)) +b_temp +200*np.log(0.001*x+1)
     T_H_plus[0,0]=b_temp
     T_H_plus[1,0]=b_temp
-    T_H_plus[-2:,0]= 25* (ge_x/20)**2*np.exp(-0.1*(ge_x/20)) +b_temp +200*np.log(0.001*ge_x+1)
+    T_H_plus[-2:,0]= 25* (ge_x/200)**2*np.exp(-0.1*(ge_x/200)) +b_temp +200*np.log(0.001*ge_x+1)
     
     #Initial H3+ temperature profile and hence pressure
-    T_H3_plus[2:-2,0] = 30* (x/15)**2*np.exp(-0.1*(x/15)) +b_temp +200*np.log(0.001*x+1)
+    T_H3_plus[2:-2,0] = 30* (x/150)**2*np.exp(-0.1*(x/150)) +b_temp +200*np.log(0.001*x+1)
     T_H3_plus[0,0]=b_temp
     T_H3_plus[1,0]=b_temp
-    T_H3_plus[-2:,0]= 30* (ge_x/15)**2*np.exp(-0.1*(ge_x/15)) +b_temp +200*np.log(0.001*ge_x+1)
+    T_H3_plus[-2:,0]= 30* (ge_x/150)**2*np.exp(-0.1*(ge_x/150)) +b_temp +200*np.log(0.001*ge_x+1)
     
     # ----------ION VELOCITY, DEPENDENT ON ION TEMPERATURE-------------
     # initial H+ ion velocity - 1eV proton eV2vel(1,m_H_plus)
@@ -465,7 +465,7 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts,b_temp,j):
     n_H_plus_floor = 6*10**7#6*10**7#4*10**5#6e4 #2*10**6
     n_H_plus[2:-2,0] = 1*10**10*np.exp(-(z/(H_scale*((m_H_plus/m_H_plus)*(b_temp/3000))))) + n_H_plus_floor #2*10**9 (subauroral, run 1) #1*10**10 (auroral), #5*10**8 (nonauroral)
     n_H_plus[0:2,0] =1*10**10*np.exp(-(gb_z/(H_scale*((m_H_plus/m_H_plus)*(b_temp/3000))))) + n_H_plus_floor
-    n_H_plus[-2:,0]=1*10**10*np.exp(-(ge_z/(H_scale*((m_H_plus/m_H3_plus)*(b_temp/3000)))))+ n_H_plus_floor
+    n_H_plus[-2:,0]=1*10**10*np.exp(-(ge_z/(H_scale*((m_H_plus/m_H_plus)*(b_temp/3000)))))+ n_H_plus_floor
     rho_H_plus[2:-2,0] = n_H_plus[2:-2,0] * m_H_plus 
     rho_H_plus[0:2,0]=n_H_plus[0:2,0] * m_H_plus
     rho_H_plus[-2:,0]=n_H_plus[-2:,0] * m_H_plus
