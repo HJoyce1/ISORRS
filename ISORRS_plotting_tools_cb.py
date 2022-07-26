@@ -1,4 +1,7 @@
-# Function for generating plots - this version is designed specifically to be colourblind friendly
+#Module for plotting functions to tidy code up
+# I think you will need to change some parameters depending on which planet
+# you want to plot out. I think these can replace the plotting in the
+# main functions if you want to
 
 
 #Personalised plotting function by me for me just to quickly check on things
