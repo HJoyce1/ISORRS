@@ -17,13 +17,13 @@ Module developed by Dave Constable at Lancaster University (2019)
 ### planet.py
 Module contains intial conditions/functions and general variables associated with either Jupiter or Saturn.
 
-### planet_scale_heights.py
+### ISORRS_planet_scale_heights.py
 Updated version of planet with an updated number density profile to better incorporate scale heights in (currently only) Jupiter's atmosphere.
 
 ### ISORRS_1Dsinglefieldline.py
 MAIN Module set up to run a series of iterations along a single field line at given position on planet.
 
-### pw_1Dsinglefieldline_asymmetries.py
+### ISORRS_1Dsinglefieldline_asymmetries.py
 MAIN Module created to iterate over different conditons in the auroral region. Currently allows for temperature, width and field-aligned current strength to be varied over 'dawn' or 'dusk' conditions.
 
 ### pw_20190502.py
@@ -37,13 +37,13 @@ Obviously with no Dungey and Vasyliunas cycle consideration.
 ### pw_plotting_tools.py
 Module to aid in plotting.
 
-### pw_plotting_tools_cb.py
+### ISORRS_plotting_tools_cb.py
 Colourblind friendly version of pw_plotting_tools with no grid lines and inward tick markers.
 
 ### pw_plotting_tools_x4.py
 Module to aid in plotting with E field and acceleration terms for ions multiplied by 4 in overview plots to represent results in the Jupiter paper. Not confident with why this has been done, but this file exists just for example for now.
 
-### pw.py
+### ISORRS_equations.py
 Module containing the physical calculations used in the model.
 
 ## Licence Info
