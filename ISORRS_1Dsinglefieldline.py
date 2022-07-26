@@ -1,14 +1,14 @@
-def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_name): 
+def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_name): 
        # ---------------------------------Imports-------------------------------------
     import numpy as np
     import matplotlib.pyplot as pl
-    import dipolefield
-    import pw as pw
-    import planet_scale_heights as planet
-    import pw_plotting_tools_cb as pwpl
+    import ISORRS_dipolefield as dipolefield
+    import ISORRS_equations as iseq
+    import ISORRS_planet_scale_heights as planet
+    import ISORRS_plotting_tools_cb as ispl
     # ---------------------------------Start Main-------------------------------------
     # Main folder to save plots and data to
-    folder = '/Users/hannah/OneDrive - Lancaster University/pw_model/test_runs_asymmetries/tests/'
+    folder = '/Users/hannah/OneDrive - Lancaster University/pw_model/subauroral_tests/outputs/'
     #folder = 'C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs_asymmetries/tests/'
     # # SECTION FOR CALCULATING RADIAL DIFFERENCES- JUPITER  
     # x = [75,75.5,76,76.5,77] #- Auroral oval 
@@ -21,25 +21,26 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     # for m in range(1,100):
     #     area_eq[m-1] = np.pi*(y_eq[m]*7.1492e7)**2 *((1)/(2* np.pi*(7.1492e7+20000000)))- np.pi*(y_eq[m-1]*7.1492e7)**2 *((1)/(2* np.pi*(7.1492e7+20000000)))
     # area_is = 25000 
-    j = 3.7e-11#0.1e-6#pw.current_density_ray2015()*1e-6
     
-    #Preallocate radial arrays for the equatorial distribution
-    # eflux_eq = np.empty([len(x_is)])
-    # ionfH_eq = np.empty([len(x_is)])
-    # ionfH3_eq = np.empty([len(x_is)])
-    # elecEM = np.empty([len(x_is)])
-    # ion1EM = np.empty([len(x_is)])
-    # ion2EM = np.empty([len(x_is)])
-    # tot_mass_eq = np.empty([len(x_is)])
+    currents = 'upward'  # change to downward if want downward currents
+    
+   
+    j = 1e-11 #0.1e-6#iseq.current_density_ray2015()*1e-6
+    b_temp = 750
+    
+    if currents == 'downward':
+        j = -j
+    else:
+        j = j
 
-    #Iterate over ionospheric latitude for 100 field lines between the latitude limits
+
     if planet_name == 'jupiter':
         # ---------------------------------Grid set up-------------------------------------    
         #800 spatial grids per Rs roughly - a bit more to round the numbers
         #    rs = 3 #how far out in rs do you want to go - roughly?
-        inner = 1400000  #lower boundary, 1400km -> 140000m
-        numpoints = int(rs * 800) 
-        dz = 75000.0 # grid spacing, 75km -> 75000m
+        inner = 1400000  #lower boundary, 1400km -> 140000m 
+        numpoints = int(rs * 8000)  #8000
+        dz = 7500.0 # grid spacing, 7.5km -> 7500m #7500
         
         #set up grid
         z=np.zeros([numpoints,])
@@ -74,7 +75,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         # -----------------------READ IN INITIAL CONDITIONS----------------------------
         #choose planet for input module - name of planet no capitals
         if planet_name == 'jupiter':
-            consts,A,FAC,ions,electrons,neutrals = planet.jupiter(its,phys_consts,z,z_ext,x,ghosts)
+            consts,A,FAC,ions,electrons,neutrals = planet.jupiter(its,phys_consts,z,z_ext,x,ghosts,b_temp,j)
             print('-------Running for Jupiter--------')
         elif planet_name == 'saturn':
             consts,A,FAC,ions,electrons,neutrals = planet.saturn(its,phys_consts,z,z_ext,x,ghosts)
@@ -92,6 +93,8 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
             if planet_name == 'jupiter':
                 # option for RAY2015 current density profile
                 FAC = j * (A[2]/A) #j[h-1]
+                
+        print(FAC)
             # elif planet_name == 'saturn':
             #     #option to include rudimental upward and downward current
             #     if x_is[h-1] >= 76.0:    
@@ -134,8 +137,8 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         #plot input values - can take up to 7-neutral 7-ion species for diff colours
         if plots ==1:
         #        pl.figure(1)
-            pwpl.input_plot(ions,electrons,neutrals,z,z_ext,A,radius)  
-            pl.savefig(folder+'inputs_plot_%s_%s.png' %(planet_name,run_name))
+            ispl.input_plot(ions,electrons,neutrals,z,z_ext,A,radius)  
+            pl.savefig(folder+'inputs_plot_%s_%s.pdf' %(planet_name,run_name))
             
         #calculation for centrifugal and gravitational accelleration - Dave's function
         phi,ag,ac = dipolefield.dipolefield_carley(radius,inner,z[-1],mass_planet,b0,lshell,rot_period,dipole_offset,numpoints)   
@@ -180,8 +183,8 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
             for n in range(1,num_ionic_species+1):
                 for p in range(1,num_neutral_species+1):
                     # calculate momentum exchange rate for each neutral species
-                    dMdt_tmp[:,p-1] = pw.momentum_rate_1species(neutrals[p]["rho"],ions[n]["mass"],neutrals[p]["mass"],neutrals[p]["lambda"], e_charge,ions[n]["rho"][:,i-1],ions[n]["u"][:,i-1])
-                    dEdt_tmp[:,p-1] = pw.energy_rate_1species(ions[n]["rho"][:,i-1],neutrals[p]["rho"],ions[n]["mass"],neutrals[p]["mass"], neutrals[p]["lambda"], e_charge, neutrals[p]["T"],ions[n]["T"][:,i-1],ions[n]["u"][:,i-1],k_b)
+                    dMdt_tmp[:,p-1] = iseq.momentum_rate_1species(neutrals[p]["rho"],ions[n]["mass"],neutrals[p]["mass"],neutrals[p]["lambda"], e_charge,ions[n]["rho"][:,i-1],ions[n]["u"][:,i-1])
+                    dEdt_tmp[:,p-1] = iseq.energy_rate_1species(ions[n]["rho"][:,i-1],neutrals[p]["rho"],ions[n]["mass"],neutrals[p]["mass"], neutrals[p]["lambda"], e_charge, neutrals[p]["T"],ions[n]["T"][:,i-1],ions[n]["u"][:,i-1],k_b)
                 # sum each neutral species for each ionic species to get momentum exchange rate for each ionic species
                 dMdt[:,n-1] = - np.sum(dMdt_tmp, axis=1)
                 dMdt_tmp = np.empty([len(z_ext),num_neutral_species])    
@@ -219,7 +222,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
                 dkdr[-1,m-1] = np.nan
             
             #uses both ions for one term - can take as many ion species as it wants
-            dEdr = (np.roll(pw.E_second_term(electrons,ions,dMdt,num_ionic_species,i),-1)-np.roll(pw.E_second_term(electrons,ions,dMdt,num_ionic_species,i),1))/(2*dz)
+            dEdr = (np.roll(iseq.E_second_term(electrons,ions,dMdt,num_ionic_species,i),-1)-np.roll(iseq.E_second_term(electrons,ions,dMdt,num_ionic_species,i),1))/(2*dz)
             dEdr[0] = np.nan
             dEdr[-1] = np.nan
             
@@ -250,60 +253,60 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
             dakTedr = np.zeros(np.size(z_ext))
             
             #parallel electric field - initial (short assumption)
-            E[2:-2,i] = pw.E_parallel_short(e_charge, electrons["n"][2:-2,i-1].T, dPrhou2[2:-2], A[2:-2].T, dAdr[2:-2], electrons["rho"][2:-2,i-1].T, electrons["u"][2:-2,i-1].T) + 1/(e_charge*electrons["n"][2:-2,i-1]) * dEdr[2:-2].T
-            E[0:2,i]=pw.extrap_start(E[2:-2,i])
-            E[-2:,i]=pw.extrap_end(E[2:-2,i])
+            E[2:-2,i] = iseq.E_parallel_short(e_charge, electrons["n"][2:-2,i-1].T, dPrhou2[2:-2], A[2:-2].T, dAdr[2:-2], electrons["rho"][2:-2,i-1].T, electrons["u"][2:-2,i-1].T) + 1/(e_charge*electrons["n"][2:-2,i-1]) * dEdr[2:-2].T
+            E[0:2,i]=iseq.extrap_start(E[2:-2,i])
+            E[-2:,i]=iseq.extrap_end(E[2:-2,i])
         
             # updated values for next step
             #ions
             for l in range(1,num_ionic_species+1):
                 #Mass conservation equation
-                ions[l]["rho"][2:-2,i] = pw.density_dt_ion(dt,A[2:-2],ions[l]["S"][2:-2],ions[l]["rho"][2:-2,i-1],dArhou[2:-2,l-1].T)
-                ions[l]["rho"][0:2,i]= pw.extrap_start(ions[l]["rho"][2:-2,i])
-                ions[l]["rho"][-2:,i]= pw.extrap_end(ions[l]["rho"][2:-2,i]) 
+                ions[l]["rho"][2:-2,i] = iseq.density_dt_ion(dt,A[2:-2],ions[l]["S"][2:-2],ions[l]["rho"][2:-2,i-1],dArhou[2:-2,l-1].T)
+                ions[l]["rho"][0:2,i]= iseq.extrap_start(ions[l]["rho"][2:-2,i])
+                ions[l]["rho"][-2:,i]= iseq.extrap_end(ions[l]["rho"][2:-2,i]) 
                 ions[l]["n"][2:-2,i] = ions[l]["rho"][2:-2,i] / ions[l]["mass"]
-                ions[l]["n"][0:2,i]=pw.extrap_start(ions[l]["n"][2:-2,i])
-                ions[l]["n"][-2:,i]=pw.extrap_end(ions[l]["n"][2:-2,i]) 
+                ions[l]["n"][0:2,i]= iseq.extrap_start(ions[l]["n"][2:-2,i])
+                ions[l]["n"][-2:,i]= iseq.extrap_end(ions[l]["n"][2:-2,i]) 
                 #Momentum conservation equation
-                ions[l]["u"][2:-2,i] = pw.velocity_dt_ion(dt,A[2:-2],ions[l]["rho"][2:-2,i-1],ions[l]["rho"][2:-2,i],dArhou2[2:-2,l-1].T,dPdr[2:-2,l-1].T,ions[l]["mass"],E[2:-2,i],e_charge,-ag,dMdt[2:-2,l-1],ions[l]["u"][2:-2,i-1],ions[l]["S"][2:-2],ac)
-                ions[l]["u"][0:2,i]= pw.extrap_start(ions[l]["u"][2:-2,i])
-                ions[l]["u"][-2:,i]= pw.extrap_end(ions[l]["u"][2:-2,i])  
+                ions[l]["u"][2:-2,i] = iseq.velocity_dt_ion(dt,A[2:-2],ions[l]["rho"][2:-2,i-1],ions[l]["rho"][2:-2,i],dArhou2[2:-2,l-1].T,dPdr[2:-2,l-1].T,ions[l]["mass"],E[2:-2,i],e_charge,-ag,dMdt[2:-2,l-1],ions[l]["u"][2:-2,i-1],ions[l]["S"][2:-2],ac)
+                ions[l]["u"][0:2,i]= iseq.extrap_start(ions[l]["u"][2:-2,i])
+                ions[l]["u"][-2:,i]= iseq.extrap_end(ions[l]["u"][2:-2,i])  
                 #Energy conservation equation
-                ions[l]["P"][2:-2,i] = pw.pressure_dt_ion(dt,A[2:-2],gamma,ions[l]["rho"][2:-2,i-1],ions[l]["rho"][2:-2,i],ions[l]["u"][2:-2,i-1],ions[l]["u"][2:-2,i],ions[l]["mass"], e_charge,E[2:-2,i],-ag,dEdt[2:-2,l-1],dMdt[2:-2,l-1],ions[l]["P"][2:-2,i-1],dEngdr[2:-2,l-1].T, dakTdr[2:-2].T,ions[l]["S"][2:-2],ac) 
-                ions[l]["P"][0:2,i]= pw.extrap_start(ions[l]["P"][2:-2,i])
-                ions[l]["P"][-2:,i]= pw.extrap_end(ions[l]["P"][2:-2,i]) 
-                ions[l]["T"][2:-2,i] = pw.plasma_temperature(ions[l]["n"][2:-2,i],k_b,ions[l]["P"][2:-2,i])
+                ions[l]["P"][2:-2,i] = iseq.pressure_dt_ion(dt,A[2:-2],gamma,ions[l]["rho"][2:-2,i-1],ions[l]["rho"][2:-2,i],ions[l]["u"][2:-2,i-1],ions[l]["u"][2:-2,i],ions[l]["mass"], e_charge,E[2:-2,i],-ag,dEdt[2:-2,l-1],dMdt[2:-2,l-1],ions[l]["P"][2:-2,i-1],dEngdr[2:-2,l-1].T, dakTdr[2:-2].T,ions[l]["S"][2:-2],ac) 
+                ions[l]["P"][0:2,i]= iseq.extrap_start(ions[l]["P"][2:-2,i])
+                ions[l]["P"][-2:,i]= iseq.extrap_end(ions[l]["P"][2:-2,i]) 
+                ions[l]["T"][2:-2,i] = iseq.plasma_temperature(ions[l]["n"][2:-2,i],k_b,ions[l]["P"][2:-2,i])
                 ions[l]["T"][0,i]=400
                 ions[l]["T"][1,i]=400
-                ions[l]["T"][-2:,i]= pw.plasma_temperature(ions[l]["n"][-2:,i],k_b,ions[l]["P"][-2:,i])
+                ions[l]["T"][-2:,i]= iseq.plasma_temperature(ions[l]["n"][-2:,i],k_b,ions[l]["P"][-2:,i])
                 #Heat conductivities
-                ions[l]["kappa"][2:-2,i] = pw.heat_conductivity(ions[l]["T"][2:-2,i],e_charge,ions[l]["mass"],m_p)
-                ions[l]["kappa"][0:2,i]= pw.extrap_start(ions[l]["kappa"][2:-2,i])
-                ions[l]["kappa"][-2:,i]= pw.extrap_end(ions[l]["kappa"][2:-2,i]) 
+                ions[l]["kappa"][2:-2,i] = iseq.heat_conductivity(ions[l]["T"][2:-2,i],e_charge,ions[l]["mass"],m_p)
+                ions[l]["kappa"][0:2,i]= iseq.extrap_start(ions[l]["kappa"][2:-2,i])
+                ions[l]["kappa"][-2:,i]= iseq.extrap_end(ions[l]["kappa"][2:-2,i]) 
              
             #Electrons
             #mass conservation
-            electrons["rho"][2:-2,i] = pw.density_dt_electron(electrons,ions,num_ionic_species,i)
-            electrons["rho"][0:2,i]=pw.extrap_start(electrons["rho"][2:-2,i])
-            electrons["rho"][-2:,i]=pw.extrap_end(electrons["rho"][2:-2,i])      
+            electrons["rho"][2:-2,i] = iseq.density_dt_electron(electrons,ions,num_ionic_species,i)
+            electrons["rho"][0:2,i]= iseq.extrap_start(electrons["rho"][2:-2,i])
+            electrons["rho"][-2:,i]= iseq.extrap_end(electrons["rho"][2:-2,i])      
             electrons["n"][2:-2,i] = electrons["rho"][2:-2,i] / electrons["mass"]
-            electrons["n"][0:2,i]= pw.extrap_start(electrons["n"][2:-2,i])
-            electrons["n"][-2:,i]= pw.extrap_end(electrons["n"][2:-2,i])   
+            electrons["n"][0:2,i]= iseq.extrap_start(electrons["n"][2:-2,i])
+            electrons["n"][-2:,i]= iseq.extrap_end(electrons["n"][2:-2,i])   
             #momentum conservation  
-            electrons["u"][2:-2,i] = pw.velocity_dt_electron(electrons,ions,num_ionic_species,i,FAC,e_charge)
-            electrons["u"][0:2,i]= pw.extrap_start(electrons["u"][2:-2,i])
-            electrons["u"][-2:,i]= pw.extrap_end(electrons["u"][2:-2,i]) 
+            electrons["u"][2:-2,i] = iseq.velocity_dt_electron(electrons,ions,num_ionic_species,i,FAC,e_charge)
+            electrons["u"][0:2,i]= iseq.extrap_start(electrons["u"][2:-2,i])
+            electrons["u"][-2:,i]= iseq.extrap_end(electrons["u"][2:-2,i]) 
             #energy conservation
-            electrons["T"][2:-2,i] = pw.temperature_dt_electron(dt,gamma,electrons["mass"],k_b,A[2:-2],electrons["rho"][2:-2,i-1],electrons["u"][2:-2,i-1],electrons["T"][2:-2,i-1],electrons["S"][2:-2],dTedr[2:-2].T,dAudr[2:-2].T,dakTedr[2:-2].T)
-            electrons["T"][0:2,i]=pw.extrap_start(electrons["T"][2:-2,i])
-            electrons["T"][-2:,i]=pw.extrap_end(electrons["T"][2:-2,i])  
-            electrons["P"][2:-2,i] = pw.plasma_pressure(electrons["rho"][2:-2,i]/electrons["mass"], k_b,electrons["T"][2:-2,i])
-            electrons["P"][0:2,i]=pw.extrap_start(electrons["P"][2:-2,i])
-            electrons["P"][-2:,i]=pw.extrap_end(electrons["P"][2:-2,i])      
+            electrons["T"][2:-2,i] = iseq.temperature_dt_electron(dt,gamma,electrons["mass"],k_b,A[2:-2],electrons["rho"][2:-2,i-1],electrons["u"][2:-2,i-1],electrons["T"][2:-2,i-1],electrons["S"][2:-2],dTedr[2:-2].T,dAudr[2:-2].T,dakTedr[2:-2].T)
+            electrons["T"][0:2,i]= iseq.extrap_start(electrons["T"][2:-2,i])
+            electrons["T"][-2:,i]= iseq.extrap_end(electrons["T"][2:-2,i])  
+            electrons["P"][2:-2,i] = iseq.plasma_pressure(electrons["rho"][2:-2,i]/electrons["mass"], k_b,electrons["T"][2:-2,i])
+            electrons["P"][0:2,i]= iseq.extrap_start(electrons["P"][2:-2,i])
+            electrons["P"][-2:,i]= iseq.extrap_end(electrons["P"][2:-2,i])      
             #Heat conductivities
-            electrons["kappa"][2:-2,i] = pw.heat_conductivity_electrons((electrons["T"][2:-2,i]),e_charge,gamma)
-            electrons["kappa"][0:2,i]= pw.extrap_start(electrons["kappa"][2:-2,i])
-            electrons["kappa"][-2:,i]= pw.extrap_end(electrons["kappa"][2:-2,i]) 
+            electrons["kappa"][2:-2,i] = iseq.heat_conductivity_electrons((electrons["T"][2:-2,i]),e_charge,gamma)
+            electrons["kappa"][0:2,i]= iseq.extrap_start(electrons["kappa"][2:-2,i])
+            electrons["kappa"][-2:,i]= iseq.extrap_end(electrons["kappa"][2:-2,i]) 
             
             '''
             MODIFICATION: I have removed the *A from the flux calculations as flux is u x n and should be displayed as that
@@ -315,8 +318,8 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
             for w in range(1,num_ionic_species+1):
                 ion_flux[2:-2,i,w-1] = ions[w]["n"][2:-2,i]*ions[w]["u"][2:-2,i] #* 1e-4# * A[2:-2] 
                 #ion_flux_tmp[2:-2,i,w-1] = ions[w]["n"][2:-2,i]*ions[w]["u"][2:-2,i] * A[2:-2]
-            e_flux[2:-2,i] = pw.electron_flux_e(electrons,i) #*1e-4#*A[2:-2]
-            #e_flux_tmp[2:-2,i] = pw.electron_flux_e(electrons,i) *A[2:-2]
+            e_flux[2:-2,i] = iseq.electron_flux_e(electrons,i) #*1e-4#*A[2:-2]
+            #e_flux_tmp[2:-2,i] = iseq.electron_flux_e(electrons,i) *A[2:-2]
             # 
 
             
@@ -329,7 +332,7 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         
         
         #Calculating total particle source
-        ind = np.max(np.where(z<25000000)) +1 # at altitude of 25000km
+        ind = np.max(np.where(z<40000000)) +1 # at altitude of 25000km
         
         #elef = e_flux_tmp[ind,-1]/A[ind] # electron flux at altitude of 25000km
         elef = e_flux[ind,-1] # electron flux at specific point
@@ -337,10 +340,10 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
         for v in range(1,num_ionic_species+1):
             ionf[v-1] = ion_flux[ind,-1,v-1]#/ A[ind]# ion flux at altitude of 25000km
         
-        width = 1.04 #2 for run 1, nonauroral and auroral, 10 for subauroral
-        colat = 16.6 #14.7 or 16.6
-        arc = width/360 * 2*np.pi*(radius+25000000) #auroral arc of 2 deg width
-        circ = 2*np.pi*(radius+25000000)*np.sin(np.deg2rad(colat)) #auroral arc centred on 14deg
+        width = 10 #2 for run 1, nonauroral and auroral, 10 for subauroral
+        colat = 27 #14.7 or 16.6
+        arc = width/360 * 2*np.pi*(radius+40000000) #auroral arc of 2 deg width
+        circ = 2*np.pi*(radius+40000000)*(np.sin(np.deg2rad(colat))) #auroral arc centred on 14deg
         # circ is angle between centre of planet and the arc
         
         # calculate total particle source
@@ -362,11 +365,11 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
     #breakpoint()
     if plots ==1:
             print('Plots on screen')
-            pwpl.output_plots(ions, electrons, neutrals, z, z_ext, A, radius)
-            pl.savefig(folder+'outputs_plot_%s_%s.png' %(planet_name,run_name))
+            ispl.output_plots(ions, electrons, neutrals, z, z_ext, A, radius)
+            pl.savefig(folder+'outputs_plot_%s_%s.pdf' %(planet_name,run_name))
         #        pl.figure(2)    
-            pwpl.results_plot(z,z_ext,radius,num_ionic_species,e_charge,E[2:-2,-1],ions,electrons,ac,ag,e_flux,ion_flux) #use _tmp if want flux * A or w/out _tmp if want flux without *A
-            pl.savefig(folder+'overview_results_plot_%s_%s.png' %(planet_name,run_name))
+            ispl.results_plot(z,z_ext,radius,num_ionic_species,e_charge,E[2:-2,-1],ions,electrons,ac,ag,e_flux,ion_flux) #use _tmp if want flux * A or w/out _tmp if want flux without *A
+            pl.savefig(folder+'overview_results_plot_%s_%s.pdf' %(planet_name,run_name))
             
             # pl.figure(6)
             # # for k in range(1,num_ionic_species+1):
@@ -424,11 +427,11 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
             # pl.show()
             
         #        pl.figure(3)
-        #     pwpl.species_plot(z,z_ext,electrons,radius)
+        #     ispl.species_plot(z,z_ext,electrons,radius)
         #     pl.savefig(folder+'species_plot_%s_electrons_%s.png' %(planet_name,run_name))
         #     for q in range(1,num_ionic_species+1):
         # #            pl.figure(q+3)
-        #         pwpl.species_plot(z,z_ext,ions[q],radius)
+        #         ispl.species_plot(z,z_ext,ions[q],radius)
         #         pl.savefig(folder+'species_plot_%s_%s_%s.png' %(planet_name,ions[q]['name'],run_name))
             print('Plots saved to: %s' %folder)
             #print(ind)
@@ -631,3 +634,6 @@ def polar_wind_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves
             f.write("\n")
         
         f.close()
+        
+    pl.subplots_adjust(hspace=0.0,wspace=0.5)
+    return b_temp,j

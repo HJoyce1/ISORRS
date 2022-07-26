@@ -2,10 +2,10 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     # ---------------------------------Imports-------------------------------------
     import numpy as np
     import matplotlib.pyplot as pl
-    import dipolefield
-    import pw as pw
-    import planet_scales as planet
-    import pw_plotting_tools_cb as pwpl
+    import ISORRS_dipolefield as dipolefield
+    import ISORRS_equations as iseq
+    import ISORRS_planet_scale_heights as planet
+    import pw_plotting_tools_cb as ispl
     from matplotlib.ticker import FormatStrFormatter #need this for plotting extra significant figures on axes (ie FACs)
     #import inputs
     # ---------------------------------Start Main-------------------------------------
@@ -213,7 +213,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
             #plot input values - can take up to 7-neutral 7-ion species for diff colours
             # if plots ==1:
             # #        pl.figure(1)
-            #     pwpl.input_plot(ions,electrons,neutrals,z,z_ext,A,radius)  
+            #     ispl.input_plot(ions,electrons,neutrals,z,z_ext,A,radius)  
             #     pl.savefig(folder+'inputs_plot_%s_%s.png' %(planet_name,run_name))
                 
             #calculation for centrifugal and gravitational accelleration - Dave's function
@@ -259,8 +259,8 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
                 for n in range(1,num_ionic_species+1):
                     for p in range(1,num_neutral_species+1):
                         # calculate momentum exchange rate for each neutral species
-                        dMdt_tmp[:,p-1] = pw.momentum_rate_1species(neutrals[p]["rho"],ions[n]["mass"],neutrals[p]["mass"],neutrals[p]["lambda"], e_charge,ions[n]["rho"][:,i-1],ions[n]["u"][:,i-1])
-                        dEdt_tmp[:,p-1] = pw.energy_rate_1species(ions[n]["rho"][:,i-1],neutrals[p]["rho"],ions[n]["mass"],neutrals[p]["mass"], neutrals[p]["lambda"], e_charge, neutrals[p]["T"],ions[n]["T"][:,i-1],ions[n]["u"][:,i-1],k_b)
+                        dMdt_tmp[:,p-1] = iseq.momentum_rate_1species(neutrals[p]["rho"],ions[n]["mass"],neutrals[p]["mass"],neutrals[p]["lambda"], e_charge,ions[n]["rho"][:,i-1],ions[n]["u"][:,i-1])
+                        dEdt_tmp[:,p-1] = iseq.energy_rate_1species(ions[n]["rho"][:,i-1],neutrals[p]["rho"],ions[n]["mass"],neutrals[p]["mass"], neutrals[p]["lambda"], e_charge, neutrals[p]["T"],ions[n]["T"][:,i-1],ions[n]["u"][:,i-1],k_b)
                     # sum each neutral species for each ionic species to get momentum exchange rate for each ionic species
                     dMdt[:,n-1] = - np.sum(dMdt_tmp, axis=1)
                     dMdt_tmp = np.empty([len(z_ext),num_neutral_species])    
@@ -298,7 +298,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
                     dkdr[-1,m-1] = np.nan
                 
                 #uses both ions for one term - can take as many ion species as it wants
-                dEdr = (np.roll(pw.E_second_term(electrons,ions,dMdt,num_ionic_species,i),-1)-np.roll(pw.E_second_term(electrons,ions,dMdt,num_ionic_species,i),1))/(2*dz)
+                dEdr = (np.roll(iseq.E_second_term(electrons,ions,dMdt,num_ionic_species,i),-1)-np.roll(iseq.E_second_term(electrons,ions,dMdt,num_ionic_species,i),1))/(2*dz)
                 dEdr[0] = np.nan
                 dEdr[-1] = np.nan
                 
@@ -329,60 +329,60 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
                 dakTedr = np.zeros(np.size(z_ext))
                 
                 #parallel electric field - initial (short assumption)
-                E[2:-2,i] = pw.E_parallel_short(e_charge, electrons["n"][2:-2,i-1].T, dPrhou2[2:-2], A[2:-2].T, dAdr[2:-2], electrons["rho"][2:-2,i-1].T, electrons["u"][2:-2,i-1].T) + 1/(e_charge*electrons["n"][2:-2,i-1]) * dEdr[2:-2].T
-                E[0:2,i]=pw.extrap_start(E[2:-2,i])
-                E[-2:,i]=pw.extrap_end(E[2:-2,i])
+                E[2:-2,i] = iseq.E_parallel_short(e_charge, electrons["n"][2:-2,i-1].T, dPrhou2[2:-2], A[2:-2].T, dAdr[2:-2], electrons["rho"][2:-2,i-1].T, electrons["u"][2:-2,i-1].T) + 1/(e_charge*electrons["n"][2:-2,i-1]) * dEdr[2:-2].T
+                E[0:2,i]=iseq.extrap_start(E[2:-2,i])
+                E[-2:,i]=iseq.extrap_end(E[2:-2,i])
             
                 # updated values for next step
                 #ions
                 for l in range(1,num_ionic_species+1):
                     #Mass conservation equation
-                    ions[l]["rho"][2:-2,i] = pw.density_dt_ion(dt,A[2:-2],ions[l]["S"][2:-2],ions[l]["rho"][2:-2,i-1],dArhou[2:-2,l-1].T)
-                    ions[l]["rho"][0:2,i]= pw.extrap_start(ions[l]["rho"][2:-2,i])
-                    ions[l]["rho"][-2:,i]= pw.extrap_end(ions[l]["rho"][2:-2,i]) 
+                    ions[l]["rho"][2:-2,i] = iseq.density_dt_ion(dt,A[2:-2],ions[l]["S"][2:-2],ions[l]["rho"][2:-2,i-1],dArhou[2:-2,l-1].T)
+                    ions[l]["rho"][0:2,i]= iseq.extrap_start(ions[l]["rho"][2:-2,i])
+                    ions[l]["rho"][-2:,i]= iseq.extrap_end(ions[l]["rho"][2:-2,i]) 
                     ions[l]["n"][2:-2,i] = ions[l]["rho"][2:-2,i] / ions[l]["mass"]
-                    ions[l]["n"][0:2,i]=pw.extrap_start(ions[l]["n"][2:-2,i])
-                    ions[l]["n"][-2:,i]=pw.extrap_end(ions[l]["n"][2:-2,i]) 
+                    ions[l]["n"][0:2,i]=iseq.extrap_start(ions[l]["n"][2:-2,i])
+                    ions[l]["n"][-2:,i]=iseq.extrap_end(ions[l]["n"][2:-2,i]) 
                     #Momentum conservation equation
-                    ions[l]["u"][2:-2,i] = pw.velocity_dt_ion(dt,A[2:-2],ions[l]["rho"][2:-2,i-1],ions[l]["rho"][2:-2,i],dArhou2[2:-2,l-1].T,dPdr[2:-2,l-1].T,ions[l]["mass"],E[2:-2,i],e_charge,-ag,dMdt[2:-2,l-1],ions[l]["u"][2:-2,i-1],ions[l]["S"][2:-2],ac)
-                    ions[l]["u"][0:2,i]= pw.extrap_start(ions[l]["u"][2:-2,i])
-                    ions[l]["u"][-2:,i]= pw.extrap_end(ions[l]["u"][2:-2,i])  
+                    ions[l]["u"][2:-2,i] = iseq.velocity_dt_ion(dt,A[2:-2],ions[l]["rho"][2:-2,i-1],ions[l]["rho"][2:-2,i],dArhou2[2:-2,l-1].T,dPdr[2:-2,l-1].T,ions[l]["mass"],E[2:-2,i],e_charge,-ag,dMdt[2:-2,l-1],ions[l]["u"][2:-2,i-1],ions[l]["S"][2:-2],ac)
+                    ions[l]["u"][0:2,i]= iseq.extrap_start(ions[l]["u"][2:-2,i])
+                    ions[l]["u"][-2:,i]= iseq.extrap_end(ions[l]["u"][2:-2,i])  
                     #Energy conservation equation
-                    ions[l]["P"][2:-2,i] = pw.pressure_dt_ion(dt,A[2:-2],gamma,ions[l]["rho"][2:-2,i-1],ions[l]["rho"][2:-2,i],ions[l]["u"][2:-2,i-1],ions[l]["u"][2:-2,i],ions[l]["mass"], e_charge,E[2:-2,i],-ag,dEdt[2:-2,l-1],dMdt[2:-2,l-1],ions[l]["P"][2:-2,i-1],dEngdr[2:-2,l-1].T, dakTdr[2:-2].T,ions[l]["S"][2:-2],ac) 
-                    ions[l]["P"][0:2,i]= pw.extrap_start(ions[l]["P"][2:-2,i])
-                    ions[l]["P"][-2:,i]= pw.extrap_end(ions[l]["P"][2:-2,i]) 
-                    ions[l]["T"][2:-2,i] = pw.plasma_temperature(ions[l]["n"][2:-2,i],k_b,ions[l]["P"][2:-2,i])
+                    ions[l]["P"][2:-2,i] = iseq.pressure_dt_ion(dt,A[2:-2],gamma,ions[l]["rho"][2:-2,i-1],ions[l]["rho"][2:-2,i],ions[l]["u"][2:-2,i-1],ions[l]["u"][2:-2,i],ions[l]["mass"], e_charge,E[2:-2,i],-ag,dEdt[2:-2,l-1],dMdt[2:-2,l-1],ions[l]["P"][2:-2,i-1],dEngdr[2:-2,l-1].T, dakTdr[2:-2].T,ions[l]["S"][2:-2],ac) 
+                    ions[l]["P"][0:2,i]= iseq.extrap_start(ions[l]["P"][2:-2,i])
+                    ions[l]["P"][-2:,i]= iseq.extrap_end(ions[l]["P"][2:-2,i]) 
+                    ions[l]["T"][2:-2,i] = iseq.plasma_temperature(ions[l]["n"][2:-2,i],k_b,ions[l]["P"][2:-2,i])
                     ions[l]["T"][0,i]=400
                     ions[l]["T"][1,i]=400
-                    ions[l]["T"][-2:,i]= pw.plasma_temperature(ions[l]["n"][-2:,i],k_b,ions[l]["P"][-2:,i])
+                    ions[l]["T"][-2:,i]= iseq.plasma_temperature(ions[l]["n"][-2:,i],k_b,ions[l]["P"][-2:,i])
                     #Heat conductivities
-                    ions[l]["kappa"][2:-2,i] = pw.heat_conductivity(ions[l]["T"][2:-2,i],e_charge,ions[l]["mass"],m_p)
-                    ions[l]["kappa"][0:2,i]= pw.extrap_start(ions[l]["kappa"][2:-2,i])
-                    ions[l]["kappa"][-2:,i]= pw.extrap_end(ions[l]["kappa"][2:-2,i]) 
+                    ions[l]["kappa"][2:-2,i] = iseq.heat_conductivity(ions[l]["T"][2:-2,i],e_charge,ions[l]["mass"],m_p)
+                    ions[l]["kappa"][0:2,i]= iseq.extrap_start(ions[l]["kappa"][2:-2,i])
+                    ions[l]["kappa"][-2:,i]= iseq.extrap_end(ions[l]["kappa"][2:-2,i]) 
                  
                 #Electrons
                 #mass conservation
-                electrons["rho"][2:-2,i] = pw.density_dt_electron(electrons,ions,num_ionic_species,i)
-                electrons["rho"][0:2,i]=pw.extrap_start(electrons["rho"][2:-2,i])
-                electrons["rho"][-2:,i]=pw.extrap_end(electrons["rho"][2:-2,i])      
+                electrons["rho"][2:-2,i] = iseq.density_dt_electron(electrons,ions,num_ionic_species,i)
+                electrons["rho"][0:2,i]= iseq.extrap_start(electrons["rho"][2:-2,i])
+                electrons["rho"][-2:,i]= iseq.extrap_end(electrons["rho"][2:-2,i])      
                 electrons["n"][2:-2,i] = electrons["rho"][2:-2,i] / electrons["mass"]
-                electrons["n"][0:2,i]= pw.extrap_start(electrons["n"][2:-2,i])
-                electrons["n"][-2:,i]= pw.extrap_end(electrons["n"][2:-2,i])   
+                electrons["n"][0:2,i]= iseq.extrap_start(electrons["n"][2:-2,i])
+                electrons["n"][-2:,i]= iseq.extrap_end(electrons["n"][2:-2,i])   
                 #momentum conservation  
-                electrons["u"][2:-2,i] = pw.velocity_dt_electron(electrons,ions,num_ionic_species,i,FAC,e_charge)
-                electrons["u"][0:2,i]= pw.extrap_start(electrons["u"][2:-2,i])
-                electrons["u"][-2:,i]= pw.extrap_end(electrons["u"][2:-2,i]) 
+                electrons["u"][2:-2,i] = iseq.velocity_dt_electron(electrons,ions,num_ionic_species,i,FAC,e_charge)
+                electrons["u"][0:2,i]= iseq.extrap_start(electrons["u"][2:-2,i])
+                electrons["u"][-2:,i]= iseq.extrap_end(electrons["u"][2:-2,i]) 
                 #energy conservation
-                electrons["T"][2:-2,i] = pw.temperature_dt_electron(dt,gamma,electrons["mass"],k_b,A[2:-2],electrons["rho"][2:-2,i-1],electrons["u"][2:-2,i-1],electrons["T"][2:-2,i-1],electrons["S"][2:-2],dTedr[2:-2].T,dAudr[2:-2].T,dakTedr[2:-2].T)
-                electrons["T"][0:2,i]=pw.extrap_start(electrons["T"][2:-2,i])
-                electrons["T"][-2:,i]=pw.extrap_end(electrons["T"][2:-2,i])  
-                electrons["P"][2:-2,i] = pw.plasma_pressure(electrons["rho"][2:-2,i]/electrons["mass"], k_b,electrons["T"][2:-2,i])
-                electrons["P"][0:2,i]=pw.extrap_start(electrons["P"][2:-2,i])
-                electrons["P"][-2:,i]=pw.extrap_end(electrons["P"][2:-2,i])      
+                electrons["T"][2:-2,i] = iseq.temperature_dt_electron(dt,gamma,electrons["mass"],k_b,A[2:-2],electrons["rho"][2:-2,i-1],electrons["u"][2:-2,i-1],electrons["T"][2:-2,i-1],electrons["S"][2:-2],dTedr[2:-2].T,dAudr[2:-2].T,dakTedr[2:-2].T)
+                electrons["T"][0:2,i]= iseq.extrap_start(electrons["T"][2:-2,i])
+                electrons["T"][-2:,i]= iseq.extrap_end(electrons["T"][2:-2,i])  
+                electrons["P"][2:-2,i] = iseq.plasma_pressure(electrons["rho"][2:-2,i]/electrons["mass"], k_b,electrons["T"][2:-2,i])
+                electrons["P"][0:2,i]= iseq.extrap_start(electrons["P"][2:-2,i])
+                electrons["P"][-2:,i]= iseq.extrap_end(electrons["P"][2:-2,i])      
                 #Heat conductivities
-                electrons["kappa"][2:-2,i] = pw.heat_conductivity_electrons((electrons["T"][2:-2,i]),e_charge,gamma)
-                electrons["kappa"][0:2,i]= pw.extrap_start(electrons["kappa"][2:-2,i])
-                electrons["kappa"][-2:,i]= pw.extrap_end(electrons["kappa"][2:-2,i]) 
+                electrons["kappa"][2:-2,i] = iseq.heat_conductivity_electrons((electrons["T"][2:-2,i]),e_charge,gamma)
+                electrons["kappa"][0:2,i]= iseq.extrap_start(electrons["kappa"][2:-2,i])
+                electrons["kappa"][-2:,i]= iseq.extrap_end(electrons["kappa"][2:-2,i]) 
                 
                 '''
                 MODIFICATION: I have removed the *A from the flux calculations as flux is u x n and should be displayed as that
@@ -393,7 +393,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
                 #Electron and ion Flux    
                 for w in range(1,num_ionic_species+1):
                     ion_flux[2:-2,i,w-1] = ions[w]["n"][2:-2,i]*ions[w]["u"][2:-2,i] #* 1e-4# * A[2:-2] 
-                e_flux[2:-2,i] = pw.electron_flux_e(electrons,i) #*1e-4#*A[2:-2]
+                e_flux[2:-2,i] = iseq.electron_flux_e(electrons,i) #*1e-4#*A[2:-2]
             
             
             #Calculating total particle source
@@ -438,18 +438,18 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
         #breakpoint()
     if plots ==1:
         #        pl.figure(1)
-            pwpl.input_plot(ions,electrons,neutrals,z,z_ext,A,radius)  
+            ispl.input_plot(ions,electrons,neutrals,z,z_ext,A,radius)  
             pl.savefig(folder+'inputs_plot_%s_%s.pdf' %(planet_name,run_name))
             print('Plots on screen')
         #        pl.figure(2)    
-            pwpl.results_plot(z,z_ext,radius,num_ionic_species,e_charge,E[2:-2,-1],ions,electrons,ac,ag,e_flux,ion_flux) 
+            ispl.results_plot(z,z_ext,radius,num_ionic_species,e_charge,E[2:-2,-1],ions,electrons,ac,ag,e_flux,ion_flux) 
             pl.savefig(folder+'overview_results_plot_%s_%s.pdf' %(planet_name,run_name))
         #        pl.figure(3)
-        #     pwpl.species_plot(z,z_ext,electrons,radius)
+        #     ispl.species_plot(z,z_ext,electrons,radius)
         #     pl.savefig(folder+'species_plot_%s_electrons_%s.png' %(planet_name,run_name))
         #     for q in range(1,num_ionic_species+1):
         # #            pl.figure(q+3)
-        #         pwpl.species_plot(z,z_ext,ions[q],radius)
+        #         ispl.species_plot(z,z_ext,ions[q],radius)
         #         pl.savefig(folder+'species_plot_%s_%s_%s.png' %(planet_name,ions[q]['name'],run_name))
         
             
