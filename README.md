@@ -11,11 +11,11 @@ Check the docstring to see the argument meanings.
 Same with the other versions of 'MAIN' modules.
 
 ## Contents
-### dipolefield.py
-Module developed by Dave Constable at Lancaster University (2019)
+### ISORRS_dipolefield.py
+Module developed by Dave Constable at Lancaster University (2019) to generate the dipole field for the planet, centrifugal acceleration and graviational acceleration.
 
 ### planet.py
-Module contains intial conditions/functions and general variables associated with either Jupiter or Saturn.
+Origininal module contains intial conditions/functions and general variables associated with either Jupiter or Saturn.
 
 ### ISORRS_planet_scale_heights.py
 Updated version of planet with an updated number density profile to better incorporate scale heights in (currently only) Jupiter's atmosphere.
