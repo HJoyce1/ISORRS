@@ -10,7 +10,8 @@ You can run the `ISORRS_1D_singlefieldline.py` as a function or from command lin
 Check the docstring to see the argument meanings.
 Same with the other versions of 'MAIN' modules.
 
-## NOTE: some files contain arguments that are not incorporated into the command line prompt yet, such as changing from 'dusk' to 'dawn' paramters within the 'ISORRS_1Dsinglefieldline_asymmetries.py' module. Please check files to ensure they are in the correct configuration before you rn them.
+### NOTE: some files contain arguments that are not incorporated into the command line prompt yet, such as changing from 'dusk' to 'dawn' paramters within the 'ISORRS_1Dsinglefieldline_asymmetries.py' module. Please check files to ensure they are in the correct configuration before you run them.
+
 
 ## Contents
 ### ISORRS_dipolefield.py
