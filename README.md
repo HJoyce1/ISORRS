@@ -10,7 +10,7 @@ You can run the `ISORRS_1D_singlefieldline.py` as a function or from command lin
 Check the docstring to see the argument meanings.
 Same with the other versions of 'MAIN' modules.
 
-### NOTE: some files contain arguments that are not incorporated into the command line prompt yet, such as changing from 'dusk' to 'dawn' paramters within the 'ISORRS_1Dsinglefieldline_asymmetries.py' module. Please check files to ensure they are in the correct configuration before you run them.
+### NOTE: some files contain arguments that are not incorporated into the command line prompt yet, such as changing from 'dusk' to 'dawn' parameters within the 'ISORRS_1Dsinglefieldline_asymmetries.py' module. Please check files to ensure they are in the correct configuration before you run them. Additionally, some older modules ask for input modules that are not the current most up to date modules, so please check what modules you need to be able to run the MAIN module you are interested in.
 
 
 # Contents
@@ -36,10 +36,10 @@ Module containing the physical calculations used in the model.
 
 ## Current Work in Progress Modules
 
-###ISORRS_1Dsinglefileline_lax.py
+### ISORRS_1Dsinglefileline_lax.py
 Current iteration of the MAIN module working on intergrating a more robust numerical method for resolving the transport equations.
 
-###ISORRS_lax_method
+### ISORRS_lax_method
 Lax methodology intended to be merged into the equations module at a future date if this numerical method proves to improve the current state of the model.
 
 
@@ -50,7 +50,7 @@ Lax methodology intended to be merged into the equations module at a future date
 MAIN Module created to iterate over different conditons in the auroral region. Currently allows for temperature, width and field-aligned current strength to be varied over 'dawn' or 'dusk' conditions.
 
 ### pw_20190502.py
-MAIN Generic file to run overall - need to look into this more. I believe this was written so Carley could print out all
+MAIN Module - generic file to run overall - need to look into this more. I believe this was written so Carley could print out all
 the files needed for the repository for the acknowledgements kept in the new Lancaster DOI stuff. 
 
 ### pw_equatorialFlux.py
@@ -70,8 +70,10 @@ Original module written by Carley Martin containing the original ntial condition
 ### pw_plotting_tools_x4.py
 Module to aid in plotting with E field and acceleration terms for ions multiplied by 4 in overview plots to represent results in the Jupiter paper. Not confident with why this has been done, but this file exists just for example for now.
 
+### Note that pw.py and dipolefield.py have been renamed ISORRS_equations.py and ISORRS_dipolefield.py but have not been updated to an extend they will not work with older MAIN modules.
 
 
+## Other Information
 
 ## Licence Info
 Chosen the GNU Lesser license as it's the closest to the CC-BY that Lancaster required available through github. 
