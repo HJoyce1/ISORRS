@@ -13,18 +13,38 @@ Same with the other versions of 'MAIN' modules.
 ### NOTE: some files contain arguments that are not incorporated into the command line prompt yet, such as changing from 'dusk' to 'dawn' paramters within the 'ISORRS_1Dsinglefieldline_asymmetries.py' module. Please check files to ensure they are in the correct configuration before you run them.
 
 
-## Contents
-### ISORRS_dipolefield.py
-Module developed by Dave Constable at Lancaster University (2019) to generate the dipole field for the planet, centrifugal acceleration and graviational acceleration.
+# Contents
 
-### planet.py
-Origininal module contains intial conditions/functions and general variables associated with either Jupiter or Saturn.
-
-### ISORRS_planet_scale_heights.py
-Updated version of planet with an updated number density profile to better incorporate scale heights in (currently only) Jupiter's atmosphere.
+## Current Model Version Files:
 
 ### ISORRS_1Dsinglefieldline.py
 MAIN Module set up to run a series of iterations along a single field line at given position on planet.
+
+### ISORRS_dipolefield.py
+Module developed by Dave Constable at Lancaster University (2019) to generate the dipole field for the planet, centrifugal acceleration and graviational acceleration.
+
+### ISORRS_planet_scale_heights.py
+Module originally developed by Carley Martin at Lancaster University (2019) to contain initial conditions and functions associated with Jupiter and Saturn. Has been updated by Hannah Joyce at Lancaster University (2022) to contain updated initial conditions better representing the scale-heights of ions and neutrals in Jupiter's ionosphere. 
+
+### ISORRS_plotting_tools_cb.py
+Module to aid with plotting originally designed by Carley Martin but modified by Hannah Joyce. Colourblind friendly version of pw_plotting_tools with no grid lines and inward tick markers.
+
+### ISORRS_equations.py
+Module containing the physical calculations used in the model.
+
+
+
+## Current Work in Progress Modules
+
+###ISORRS_1Dsinglefileline_lax.py
+Current iteration of the MAIN module working on intergrating a more robust numerical method for resolving the transport equations.
+
+###ISORRS_lax_method
+Lax methodology intended to be merged into the equations module at a future date if this numerical method proves to improve the current state of the model.
+
+
+
+## Files for Specific Functions
 
 ### ISORRS_1Dsinglefieldline_asymmetries.py
 MAIN Module created to iterate over different conditons in the auroral region. Currently allows for temperature, width and field-aligned current strength to be varied over 'dawn' or 'dusk' conditions.
@@ -37,17 +57,21 @@ the files needed for the repository for the acknowledgements kept in the new Lan
 MAIN Module which calculates the amount of flux all the way out where the magnetic field crosses the equatorial region.
 Obviously with no Dungey and Vasyliunas cycle consideration.
 
+
+
+## Older Files for Reference
+
 ### pw_plotting_tools.py
 Module to aid in plotting.
-
-### ISORRS_plotting_tools_cb.py
-Colourblind friendly version of pw_plotting_tools with no grid lines and inward tick markers.
+ 
+### planet.py
+Original module written by Carley Martin containing the original ntial conditions/functions and general variables for the model associated with either Jupiter or Saturn.
 
 ### pw_plotting_tools_x4.py
 Module to aid in plotting with E field and acceleration terms for ions multiplied by 4 in overview plots to represent results in the Jupiter paper. Not confident with why this has been done, but this file exists just for example for now.
 
-### ISORRS_equations.py
-Module containing the physical calculations used in the model.
+
+
 
 ## Licence Info
 Chosen the GNU Lesser license as it's the closest to the CC-BY that Lancaster required available through github. 
