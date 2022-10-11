@@ -1,10 +1,12 @@
-#Module for plotting functions to tidy code up
-# I think you will need to change some parameters depending on which planet
-# you want to plot out. I think these can replace the plotting in the
-# main functions if you want to
+#  Function for plotting
+# Part of the lancaster polar wind model
+# Author: C.J. Martin @ Lancaster University
+# 2019
 
+# Updated by H. Joyce, 2021
+#==================================================
 
-#Personalised plotting function by me for me just to quickly check on things
+#Personalised plotting function to quickly check on things
 def plot_me_quick(x,y,xlabel,ylabel,grid):
     import matplotlib.pyplot as pl
     pl.plot(x,y)

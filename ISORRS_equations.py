@@ -1,4 +1,4 @@
-# Functions for polar wind model
+# Functions for ISORRS model
 # All in SI units unless specified
 # Part of the lancaster polar wind model
 # Author: C.J. Martin @ Lancaster University
@@ -41,13 +41,13 @@ def energy_rate_1species(rho_i,rho_n,m_i,m_j,lambda_n, e_charge,T_j,T_i,u_i,k_b)
     return ((rho_i * collision_freq(rho_n,m_i,m_j,lambda_n, e_charge))/\
             (m_i + m_j)) * (3* k_b * (T_j-T_i) + m_j*u_i**2)
         # ion mass density x collision freq / (ion mass + neutral mass) x 3xboltzmann x (temp neutrals - temp ions) +
-        # neutral mass x neutral velocity^2
+        # neutral mass x ion velocity^2
 #==============================================================================
 def heat_conductivity(T,e_charge,m_i,m_p):
 #Returns: ion heat conductivity
 #Requires: electron temp. electron charge, mass ion, mass proton
 #Ref: Banks&Kockarts1973, Moore+ 2008
-    return (4.6*10**4 *(m_i/m_p)**-0.5 * T**2.5)*e_charge*100 #J m-1 s-1 K-1
+    return ((4.6*10**4.0 *(m_i/m_p)**-0.5 * T**2.5)*e_charge*100.0)#J m-1 s-1 K-1
 #( 4.6x10^4 x (ion mass/ proton mass)^-0.5 x temp^2.5) x electron charge x100
 #==============================================================================
 def heat_conductivity_electrons(T,e_charge,gamma):
@@ -70,6 +70,7 @@ def plasma_temperature(n,k_b,P):
 #Requires: number density, boltzmann constant, pressure
 #Ref: P = nkT  
     return (P/(n*k_b))
+    
 # pressure / number density x boltzmanns (pressure is from plasma pressure function)
 #==============================================================================   
 def E_second_term(electrons,ions,dMdt,num_ionic_species,j):
@@ -137,7 +138,7 @@ def velocity_dt_ion(dt,A,rho,rho_1,dFdr,dPdr,m_i,E,e_charge,ag,dMdt,u,S,ac):
 #ref: Gombozi+1985, Glocer+ 2007 etc.
     return ((dt/(A*rho_1))*(-dFdr - (A*dPdr) +(A*rho*((e_charge/m_i)*E - ag + ac)) + \
            A*dMdt + A*u*S)+((rho*u)/rho_1))
-        # ((dt/ cross section areax rho_1? )) * (-dFdr - (area*dPdr) + (area* mass density*((electron charge/ion mass)* E field
+        # ((dt/ cross section areax rho_1? )) * (-dArhou2 - (area*dPdr) + (area* mass density*((electron charge/ion mass)* E field
         # - gravitational acceleration  + centrifugal acceleration)) + area x dMdt + area x velocity x mass production) +
         # ((mass density x velocity/ rho_1
         # CHECK THIS
