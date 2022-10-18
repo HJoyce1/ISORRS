@@ -39,7 +39,7 @@ Module containing the physical calculations used in the model.
 ### ISORRS_1Dsinglefileline_lax.py
 Current iteration of the MAIN module working on intergrating a more robust numerical method for resolving the transport equations.
 
-### ISORRS_lax_method
+### ISORRS_lax_method.py
 Lax methodology intended to be merged into the equations module at a future date if this numerical method proves to improve the current state of the model.
 
 
