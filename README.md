@@ -47,7 +47,10 @@ Lax methodology intended to be merged into the equations module at a future date
 ## Files for Specific Functions
 
 ### ISORRS_1Dsinglefieldline_asymmetries.py
-MAIN Module created to iterate over different conditons in the auroral region. Currently allows for temperature, width and field-aligned current strength to be varied over 'dawn' or 'dusk' conditions.
+MAIN Module created to iterate over different conditons in the auroral region. Currently allows for temperature, width, number density and field-aligned current strength to be varied over 'dawn' or 'dusk' conditions.
+
+### ISORRS_planet_den_asym.py
+Version of the PLANET_SCALE_HEIGHTS module specifically designed to work with the ASYMMETRIES MAIN module above. Contains initial conditions for Jupiter and Saturn.
 
 ### pw_20190502.py
 MAIN Module - generic file to run overall - need to look into this more. I believe this was written so Carley could print out all
