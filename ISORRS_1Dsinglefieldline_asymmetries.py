@@ -1,24 +1,20 @@
-# module specifically for looking at asymmetries across a specific region
-# this module runs the code multiple times across a set of changing variables
-# to see how the change alters the rate of outflow
-
 def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_name):
     # ---------------------------------Imports-------------------------------------
     import numpy as np
     import matplotlib.pyplot as pl
     import ISORRS_dipolefield as dipolefield
     import ISORRS_equations as iseq
-    import ISORRS_planet_scale_heights as planet
-    import pw_plotting_tools_cb as ispl
+    import ISORRS_planet_den_asym as planet
+    import ISORRS_plotting_tools_cb as ispl
     from matplotlib.ticker import FormatStrFormatter #need this for plotting extra significant figures on axes (ie FACs)
     #import inputs
     # ---------------------------------Start Main-------------------------------------
     # main folder to save plots and data to
-    folder = '/Users/hannah/OneDrive - Lancaster University/pw_model/test_runs_asymmetries/tests/'
+    folder = '/Users/hannah/OneDrive - Lancaster University/pw_model/subauroral_tests/file_tests/'
     #folder = 'C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs_asymmetries/tests/'
 
     # section to define inputs for this run
-    asymmetry = 'FACs'
+    asymmetry = 'Density'
     local_time = 'Dusk'
     #-------------------------------Wrapper for Asymmetries--------------------------
 
@@ -31,7 +27,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     # ifs statement to define variables based on what local time and asymmetry type want to look at
     if asymmetry == 'Temperature' and local_time == 'Dawn':
         # set range of temperatures to iterate over
-        temps = np.arange(500,2100,100)
+        temps = np.arange(500,1700,100)
         # set static variables
         width = 1.04
         j = 3.7e-11
@@ -73,6 +69,30 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
         value = widths
         unit = '(Degrees)'
 
+    elif asymmetry == 'Density' and local_time == 'Dawn':
+        den_H3_plus = [1e9, 5e9, 1e10, 5e10, 1e11]
+        den_H_plus = [1e8, 5e8, 1e9, 5e9, 1e10]
+
+        b_temp = 900
+        width = 10
+        colat = 19
+        j = 3.7e-11
+        value = den_H_plus
+        value_2 = den_H3_plus
+        unit = '(m^-3)'
+
+    elif asymmetry == 'Density' and local_time == 'Dusk':
+        den_H3_plus = [1e9, 5e9, 1e10, 5e10, 1e11]
+        den_H_plus = [1e8, 5e8, 1e9, 5e9, 1e10]
+
+        b_temp = 800
+        width = 10
+        colat = 19
+        j = 1e-11
+        value = den_H_plus
+        value_2 = den_H3_plus
+        unit = '(m^-3)'
+
     elif asymmetry == 'FACs' and local_time == 'Dawn':
         # set range of current strengths to iterate over
         FACS = np.arange(0.25,5.25,0.25)
@@ -99,25 +119,44 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
         print('invalid selection')
         exit()
 
-    # outer for loop, to loop through the asymmetry variable
+    # if asymmetry == 'Density':
     for h in range(1, len(value)+1):
         number = value[h-1]
+        number_2 = value_2[h-1]
         print('--------------New Run-------------')
         print('Local Time:')
         print(local_time)
         print('Run Number:')
+        run_number = h
         print(h)
         print(asymmetry,unit,':')
         print(number)
+        print(number_2)
+
+
+# else:
+# # outer for loop, to loop through the asymmetry variable
+#     for h in range(1, len(value)+1):
+#         number = value[h-1]
+#         print('--------------New Run-------------')
+#         print('Local Time:')
+#         print(local_time)
+#         print('Run Number:')
+#         print(h)
+#         print(asymmetry,unit,':')
+#         print(number)
 
         # section to ensure looped varible assigned to correct variable in main body of code
         if asymmetry == 'Temperature':
             b_temp = number
         elif asymmetry == 'Width':
             width = number
+        elif asymmetry == 'Density':
+            n_den_H = (number)
+            n_den_H3_plus = (number_2)
         else:
             j = (number)*1e-11
-            print(j)
+            #print(j)
 
 
     #second loop to iterate over ionospheric latitude for 100 field lines between the latitude limits
@@ -125,7 +164,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
         # ---------------------------------Grid set up-------------------------------------
         #800 spatial grids per Rs roughly - a bit more to round the numbers
             inner = 1400000  #lower boundary, 1400km -> 140000m
-            numpoints = int(rs * 8000)
+            numpoints = int(rs*8000)#int(rs * 8000)
             dz = 7500.0 # grid spacing, 75km -> 75000m
 
             #set up grid
@@ -161,7 +200,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
             # -----------------------READ IN INITIAL CONDITIONS----------------------------
             #choose planet for input module - name of planet no capitals
             if planet_name == 'jupiter':
-                consts,A,ions,electrons,neutrals = planet.jupiter(its,phys_consts,z,z_ext,x,ghosts,b_temp,j)
+                consts,A,ions,electrons,neutrals = planet.jupiter(its,phys_consts,z,z_ext,x,ghosts,b_temp,j,n_den_H,n_den_H3_plus)
                 print('-------Running for Jupiter--------')
             elif planet_name == 'saturn':
                 consts,A,ions,electrons,neutrals = planet.saturn(its,phys_consts,z,z_ext,x,ghosts)
@@ -169,6 +208,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
             else:
                 print('Incorrect planet_name input, please use ''jupiter'' or ''saturn''')
                 exit()
+
 
             #optional field aligned currents
             if FAC_flag != 0:
@@ -196,6 +236,8 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
             ion1_flux[:,0] = np.nan # no initial values for electron flux
             ion2_flux = np.empty([len(z)+4,its])
             ion2_flux[:,0] = np.nan # no initial values for electron flux
+            ion_flux_tot = np.empty([len(z)+4,its])
+            ion_flux_tot[:,0] = np.nan
 
             # unpack constants
             radius = consts[0]
@@ -244,6 +286,124 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
             dEngdr= np.empty([len(z_ext),num_ionic_species])
             dkdr= np.empty([len(z_ext),num_ionic_species])
             ion_flux = np.empty([len(z_ext),its,num_ionic_species,])
+
+
+            if saves ==1:
+                #create and open file
+                fid = folder+"ISORRS_input_%s_%s_%s.txt" %(planet_name,run_name,run_number)
+                f= open(fid,"w+")
+                print('Data saved to file: %s ' %fid)
+                f.write("-------SETUP------- \n")
+                f.write("Planet=%s\n" %(planet_name))
+                f.write("Time Step=%s\n" %(dt))
+                f.write("Spatial Step=%s\n" %(dz))
+                f.write("Iterations=%s\n" %(its))
+                f.write("Outer limit =%s\n (RJ)" %(rs))
+                f.write("L-Shell=%s\n" %(lshell))
+                f.write("Field Aligned Currents removed:1,included:0 =%s\n" %(FAC_flag))
+                f.write("Field Aligned Current Strength: %s\n" %(j))
+                f.write("Centrifugal Stress  removed:1,included:0 =%s\n" %(CF_flag))
+                f.write("Width of Region (degrees): %s\n" %(width))
+                f.write("Colatitude Location (latitude): %s\n" %(colat))
+                f.write("Initial Ionospheric Temperature (K): %s\n" %(b_temp))
+                f.write("Number of Ionic species=%s\n" %(num_ionic_species))
+                f.write("Number of Neutral species=%s\n" %(num_neutral_species))
+                for s in range(1,num_ionic_species+1):
+                    f.write("Ion Species %d: %s\n" %(s,ions[s]["name"]))
+                for w in range(1,num_neutral_species+1):
+                    f.write("Neutral Species %d: %s\n" %(w,neutrals[w]["name"]))
+                f.write("-------VECTORS------- \n")
+                f.write("Current Density: \n")
+                for vv in range(0,len(FAC)):
+                    f.write('%s,' %(FAC[vv]))
+                f.write("\n")
+
+                f.write("Cross Sectional Area of Flux  Tube / A: \n")
+                for vw in range(0,len(A)):
+                    f.write('%s,' %(A[vw]))
+                f.write("\n")
+
+                f.write("Spatial Grid: \n")
+                for cc in range(0,len(z)):
+                     f.write('%s,' %(z[cc]))
+                f.write("\n")
+
+                f.write("Gravitational Acceleration: \n")
+                for aa in range(0,len(ag)):
+                    f.write('%s,' %(ag[aa]))
+                f.write("\n")
+
+                f.write("Centrifugal Acceleration: \n")
+                for bb in range(0,len(ac)):
+                    f.write('%s,' %(ac[bb]))
+                f.write("\n")
+                f.write("-------ELECTRONS------- \n")
+
+                f.write("rho (kg/m^3): \n")
+                for ee in range(0,len(electrons["rho"][2:-2,0])):
+                    f.write('%s,' %(electrons["rho"][2:-2,0][ee]))
+                f.write("\n")
+
+                f.write("n (/m^3): \n")
+                for ff in range(0,len(electrons["n"][2:-2,0])):
+                    f.write('%s,' %(electrons["n"][2:-2,0][ff]))
+                f.write("\n")
+
+                f.write("u (m/s): \n")
+                for gg in range(0,len(electrons["u"][2:-2,0])):
+                    f.write('%s,' %(electrons["u"][2:-2,0][gg]))
+                f.write("\n")
+
+                f.write("P (Pa): \n")
+                for hh in range(0,len(electrons["P"][2:-2,0])):
+                    f.write('%s,' %(electrons["P"][2:-2,0][hh]))
+                f.write("\n")
+
+                f.write("T (K): \n")
+                for ii in range(0,len(electrons["T"][2:-2,0])):
+                    f.write('%s,' %(electrons["T"][2:-2,0][ii]))
+                f.write("\n")
+
+                f.write("kappa: \n")
+                for jj in range(0,len(electrons["kappa"][2:-2,0])):
+                    f.write('%s,' %(electrons["kappa"][2:-2,0][jj]))
+                f.write("\n")
+
+
+                for kk in range(1,num_ionic_species+1):
+                    f.write("-------%s------- \n" %ions[kk]["name"])
+
+                    f.write("rho (kg/m^3): \n")
+                    for ee in range(0,len(ions[kk]["rho"][2:-2,0])):
+                        f.write('%s,' %(ions[kk]["rho"][2:-2,0][ee]))
+                    f.write("\n")
+
+                    f.write("n (/m^3): \n")
+                    for ff in range(0,len(ions[kk]["n"][2:-2,0])):
+                        f.write('%s,' %(ions[kk]["n"][2:-2,0][ff]))
+                    f.write("\n")
+
+                    f.write("u (m/s): \n")
+                    for gg in range(0,len(ions[kk]["u"][2:-2,0])):
+                        f.write('%s,' %(ions[kk]["u"][2:-2,0][gg]))
+                    f.write("\n")
+
+                    f.write("P (Pa): \n")
+                    for hh in range(0,len(ions[kk]["P"][2:-2,0])):
+                        f.write('%s,' %(ions[kk]["P"][2:-2,0][hh]))
+                    f.write("\n")
+
+                    f.write("T (K): \n")
+                    for ii in range(0,len(ions[kk]["T"][2:-2,0])):
+                        f.write('%s,' %(ions[kk]["T"][2:-2,0][ii]))
+                    f.write("\n")
+
+                    f.write("kappa: \n")
+                    for jj in range(0,len(ions[kk]["kappa"][2:-2,0])):
+                        f.write('%s,' %(ions[kk]["kappa"][2:-2,0][jj]))
+                    f.write("\n")
+
+                f.close()
             # ----------------------------------------------------------------------------
             for i in range(1,its):
                 #this is the main loop for the iterations
@@ -399,7 +559,9 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
                     ion_flux[2:-2,i,w-1] = ions[w]["n"][2:-2,i]*ions[w]["u"][2:-2,i] #* 1e-4# * A[2:-2]
                 e_flux[2:-2,i] = iseq.electron_flux_e(electrons,i) #*1e-4#*A[2:-2]
 
+                ion_flux_tot[2:-2,i] = np.add(ion_flux[2:-2,i,0],ion_flux[2:-2,i,1])
 
+            #---------------
             #Calculating total particle source
             ind = np.max(np.where(z<40000000)) +1 # at altitude of 25000km
 
@@ -416,10 +578,12 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
 
             # calculate total particle source
             elecTPS = elef*arc*circ*2
+            ion_TPS = ionf[0] + ionf[1]
             ion1TPS = ionf[0]*arc*circ*2
             ion2TPS = ionf[1]*arc*circ*2
+            ion_TPSs = ion_TPS*arc*circ
             TPS = 2*elecTPS
-            TPSi = ion1TPS + ion2TPS
+            TPSi = 2*(ion1TPS + ion2TPS)
             print('\n-------------Results--------------')
             print('Total particle source [s^-1]:')
             print(TPS)
@@ -438,6 +602,134 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
             AllTMS.append(TMS)
             AllTPSi.append(TPSi)
 
+            if saves ==1:
+
+               fid_2 = folder+"ISORRS_output_%s_%s_%s.txt" %(planet_name,run_name,run_number)
+               g = open(fid_2,"w+")
+               print('Data saved to file: %s ' %fid_2)
+               g.write("-------RESULTS------- \n")
+               g.write("Total Electron Particle Source: %s\n" %(TPS))
+               g.write("Total Ion Particle Source: %s\n" %(TPSi))
+               g.write("Total Mass Source: %s\n" %(TMS))
+               g.write("-------SETUP------- \n")
+               g.write("Planet=%s\n" %(planet_name))
+               g.write("Time Step=%s\n" %(dt))
+               g.write("Spatial Step=%s\n" %(dz))
+               g.write("Iterations=%s\n" %(its))
+               g.write("Outer limit =%s\n (RJ)" %(rs))
+               g.write("L-Shell=%s\n" %(lshell))
+               g.write("Field Aligned Currents removed:1,included:0 =%s\n" %(FAC_flag))
+               g.write("Field Aligned Current Strength: %s\n" %(j))
+               g.write("Centrifugal Stress  removed:1,included:0 =%s\n" %(CF_flag))
+               g.write("Width of Region (degrees): %s\n" %(width))
+               g.write("Colatitude Location (latitude): %s\n" %(colat))
+               g.write("Initial Ionospheric Temperature (K): %s\n" %(b_temp))
+               g.write("Number of Ionic species=%s\n" %(num_ionic_species))
+               g.write("Number of Neutral species=%s\n" %(num_neutral_species))
+               for s in range(1,num_ionic_species+1):
+                   g.write("Ion Species %d: %s\n" %(s,ions[s]["name"]))
+               for w in range(1,num_neutral_species+1):
+                   g.write("Neutral Species %d: %s\n" %(w,neutrals[w]["name"]))
+
+               g.write("-------VECTORS------- \n")
+               g.write("Current Density: \n")
+               for vv in range(0,len(FAC)):
+                   g.write('%s,' %(FAC[vv]))
+               g.write("\n")
+
+               g.write("A: \n")
+               for vw in range(0,len(A)):
+                   g.write('%s,' %(A[vw]))
+               g.write("\n")
+
+               g.write("Spatial Grid: \n")
+               for cc in range(0,len(z)):
+                    g.write('%s,' %(z[cc]))
+               g.write("\n")
+
+               g.write("Gravitational Acceleration: \n")
+               for aa in range(0,len(ag)):
+                   g.write('%s' %(ag[aa]))
+               g.write("\n")
+
+               g.write("Centrifugal Acceleration: \n")
+               for bb in range(0,len(ac)):
+                   g.write('%s,' %(ac[bb]))
+               g.write("\n")
+
+               g.write("Electric Field: \n")
+               for dd in range(0,len(E[2:-2,-1])):
+                   g.write('%s,' %(E[2:-2,-1][dd]))
+               g.write("\n")
+
+               g.write("-------ELECTRONS------- \n")
+
+               g.write("rho (kg/m^3): \n")
+               for ee in range(0,len(electrons["rho"][2:-2,-1])):
+                   g.write('%s,' %(electrons["rho"][2:-2,-1][ee]))
+               g.write("\n")
+
+               g.write("n (/m^3): \n")
+               for ff in range(0,len(electrons["n"][2:-2,-1])):
+                   g.write('%s,' %(electrons["n"][2:-2,-1][ff]))
+               g.write("\n")
+
+               g.write("u (m/s): \n")
+               for gg in range(0,len(electrons["u"][2:-2,-1])):
+                   g.write('%s,' %(electrons["u"][2:-2,-1][gg]))
+               g.write("\n")
+
+               g.write("P (Pa): \n")
+               for hh in range(0,len(electrons["P"][2:-2,-1])):
+                   g.write('%s,' %(electrons["P"][2:-2,-1][hh]))
+               g.write("\n")
+
+               g.write("T (K): \n")
+               for ii in range(0,len(electrons["T"][2:-2,-1])):
+                   g.write('%s,' %(electrons["T"][2:-2,-1][ii]))
+               g.write("\n")
+
+               g.write("kappa: \n")
+               for jj in range(0,len(electrons["kappa"][2:-2,-1])):
+                   g.write('%s,' %(electrons["kappa"][2:-2,-1][jj]))
+               g.write("\n")
+
+
+               for kk in range(1,num_ionic_species+1):
+                   g.write("-------%s------- \n" %ions[kk]["name"])
+
+                   g.write("rho (kg/m^3): \n")
+                   for ee in range(0,len(ions[kk]["rho"][2:-2,-1])):
+                       g.write('%s,' %(ions[kk]["rho"][2:-2,-1][ee]))
+                   g.write("\n")
+
+                   g.write("n (/m^3): \n")
+                   for ff in range(0,len(ions[kk]["n"][2:-2,-1])):
+                       g.write('%s,' %(ions[kk]["n"][2:-2,-1][ff]))
+                   g.write("\n")
+
+                   g.write("u (m/s): \n")
+                   for gg in range(0,len(ions[kk]["u"][2:-2,-1])):
+                       g.write('%s,' %(ions[kk]["u"][2:-2,-1][gg]))
+                   g.write("\n")
+
+                   g.write("P (Pa): \n")
+                   for hh in range(0,len(ions[kk]["P"][2:-2,-1])):
+                       g.write('%s,' %(ions[kk]["P"][2:-2,-1][hh]))
+                   g.write("\n")
+
+                   g.write("T (K): \n")
+                   for ii in range(0,len(ions[kk]["T"][2:-2,-1])):
+                       g.write('%s,' %(ions[kk]["T"][2:-2,-1][ii]))
+                   g.write("\n")
+
+                   g.write("kappa: \n")
+                   for jj in range(0,len(ions[kk]["kappa"][2:-2,-1])):
+                       g.write('%s,' %(ions[kk]["kappa"][2:-2,-1][jj]))
+                   g.write("\n")
+
+               g.close()
+
 
         #breakpoint()
     if plots ==1:
@@ -446,7 +738,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
             pl.savefig(folder+'inputs_plot_%s_%s.pdf' %(planet_name,run_name))
             print('Plots on screen')
         #        pl.figure(2)
-            ispl.results_plot(z,z_ext,radius,num_ionic_species,e_charge,E[2:-2,-1],ions,electrons,ac,ag,e_flux,ion_flux)
+            ispl.results_plot(z,z_ext,radius,num_ionic_species,e_charge,E[2:-2,-1],ions,electrons,ac,ag,e_flux,ion_flux,ion_flux_tot)
             pl.savefig(folder+'overview_results_plot_%s_%s.pdf' %(planet_name,run_name))
         #        pl.figure(3)
         #     ispl.species_plot(z,z_ext,electrons,radius)
@@ -503,7 +795,8 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
                 ax4[1].tick_params(direction='in',bottom=True, top=True, left=True, right=True)
                 ax4[1].set_xlabel('Auroral Width \N{DEGREE SIGN}')
                 ax4[1].set_ylabel('Total Mass Source (kgs$^{-1}$)')
-            else:
+
+            elif asymmetry == 'FACs':
                 fig6,ax6=pl.subplots(3,1,sharex=True,figsize=(12,12))
                 pl.subplots_adjust(wspace=0,hspace=0)
                 # FACs
@@ -534,142 +827,57 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
                 ax6[2].set_ylabel('Total Mass Source (kgs$^{-1}$)')
                 ax6[2].set_xlabel('Current Strength / $10^{-7}$ (A)')
 
+            else:
+                fig7,ax7=pl.subplots(3,1,sharex=True,figsize=(12,12))
+                pl.subplots_adjust(wspace=0,hspace=0)
+                # FACs
+                Harr=np.array(den_H_plus)
+                H3arr = np.array(den_H3_plus)
+                k,l=np.polyfit(Harr, TPSgraph, 1)
+                p,q=np.polyfit(H3arr,TPSgraph, 1)
+                HfitP = (k*Harr+l)
+                H3fitP = (p*H3arr+q)
+                ax7[0].plot(Harr, HfitP, color='orange',linestyle='dashed')
+                ax7[0].plot(Harr,TPSgraph,'o')
+                ax7[0].plot(H3arr, H3fitP, color='teal',linestyle='dashed')
+                ax7[0].plot(H3arr,TPSgraph,'o')
+                ax7[0].tick_params(direction='in',bottom=True, top=True, left=True, right=True)
+                ax7[0].yaxis.set_major_formatter(FormatStrFormatter('%.10f'))
+                ax7[0].set_ylabel('Total Particle Source / $10^{27}$ (s$^{-1}$)')
+
+                r,s=np.polyfit(Harr,TPSigraph,1)
+                t,w = np.polyfit(H3arr,TPSigraph,1)
+                HfitPi=(r*Harr+s)
+                H3fitPi = (t*H3arr+w)
+                ax7[1].plot(Harr, HfitPi, color='peachpuff',linestyle='dashed')
+                ax7[1].plot(Harr,TPSigraph,'o')
+                ax7[1].plot(H3arr, H3fitPi, color='skyblue',linestyle='dashed')
+                ax7[1].plot(H3arr,TPSigraph,'o')
+                ax7[1].tick_params(direction='in',bottom=True, top=True, left=True, right=True)
+                ax7[1].yaxis.set_major_formatter(FormatStrFormatter('%.10f'))
+                ax7[1].set_ylabel('Total Ion Particle Source / $10^{27}$ (s$^{-1}$)')
+
+
+                m, n = np.polyfit(Harr, TMSarr, 1)
+                y,z = np.polyfit(H3arr, TMSarr, 1)
+                HfitM =(m*Harr+n)
+                H3fitM = (y*H3arr+z)
+                ax7[2].plot(Harr, HfitM,color='sienna',linestyle='dashed')
+                ax7[2].plot(Harr,TMSarr,'o')
+                ax7[2].plot(H3arr, H3fitM,color='indigo',linestyle='dashed')
+                ax7[2].plot(H3arr,TMSarr,'o')
+                ax7[2].tick_params(direction='in',bottom=True, top=True, left=True, right=True)
+                ax7[2].yaxis.set_major_formatter(FormatStrFormatter('%.10f'))
+                ax7[2].set_ylabel('Total Mass Source (kgs$^{-1}$)')
+                ax7[2].set_xlabel('Number Density / $10^{-11}$ ($m^{-3})')
+
+
             pl.savefig(folder+'sources_plot_%s_%s.png' %(planet_name,run_name))
             print('Plots saved to: %s' %folder)
 
 
-    if saves ==1:
-
-
-        #create and open file
-        fid = folder+"ISORRS_output_%s_%s.txt" %(planet_name,run_name)
-        f= open(fid,"w+")
-        print('Data saved to file: %s ' %fid)
-        f.write("-------RESULTS------- \n")
-        f.write("Total Particle Source: %s\n" %(AllTPS))
-        f.write("Total Mass Source: %s\n" %(AllTMS))
-        f.write("Total Ion Particle Source: %s\n" %(AllTPSi))
-        f.write("-------SETUP------- \n")
-        f.write("Planet=%s\n" %(planet_name))
-        f.write("Time Step=%s\n" %(dt))
-        f.write("Spatial Step=%s\n" %(dz))
-        f.write("Iterations=%s\n" %(its))
-        f.write("Outer limit =%s\n (RJ)" %(rs))
-        f.write("L-Shell=%s\n" %(lshell))
-        f.write("Field Aligned Currents removed:1,included:0 =%s\n" %(FAC_flag))
-        f.write("Centrifugal Stress  removed:1,included:0 =%s\n" %(CF_flag))
-        f.write("Temperature (K): %s\n" %(b_temp))
-        #f.write("Temperatures (K): %s\n" %(temps))
-        f.write("Initial FAC Strengths (A): %s\n" %(FACS))
-        #f.write("Initial FAC Strength (A): %s\n" %(FAC))
-        f.write("Width (degrees): %s\n" %(width))
-        #f.write("Widths (degrees): %s\n" %(widths))
-        f.write("Number of Ionic species=%s\n" %(num_ionic_species))
-        f.write("Number of Neutral species=%s\n" %(num_neutral_species))
-        for s in range(1,num_ionic_species+1):
-            f.write("Ion Species %d: %s\n" %(s,ions[s]["name"]))
-        for w in range(1,num_neutral_species+1):
-            f.write("Neutral Species %d: %s\n" %(w,neutrals[w]["name"]))
-        # f.write("-------VECTORS------- \n")
-        # f.write("Current Density: \n")
-        # for vv in range(0,len(FAC)):
-        #     f.write('%s,' %(FAC[vv]))
-        # f.write("\n")
-
-        # f.write("A: \n")
-        # for vw in range(0,len(A)):
-        #     f.write('%s,' %(A[vw]))
-        # f.write("\n")
-
-        # f.write("Spatial Grid: \n")
-        # for cc in range(0,len(z)):
-        #     f.write('%s,' %(z[cc]))
-        # f.write("\n")
-
-        # f.write("Gravitational Acceleration: \n")
-        # for aa in range(0,len(ag)):
-        #     f.write('%s,' %(ag[aa]))
-        # f.write("\n")
-
-        # f.write("Centrifugal Acceleration: \n")
-        # for bb in range(0,len(ac)):
-        #     f.write('%s,' %(ac[bb]))
-        # f.write("\n")
-
-        # f.write("Electric Field: \n")
-        # for dd in range(0,len(E[2:-2,-1])):
-        #     f.write('%s,' %(E[2:-2,-1][dd]))
-        # f.write("\n")
-
-        # f.write("-------ELECTRONS------- \n")
-
-        # f.write("rho (kg/m^3): \n")
-        # for ee in range(0,len(electrons["rho"][2:-2,-1])):
-        #     f.write('%s,' %(electrons["rho"][2:-2,-1][ee]))
-        # f.write("\n")
-
-        # f.write("n (/m^3): \n")
-        # for ff in range(0,len(electrons["n"][2:-2,-1])):
-        #     f.write('%s,' %(electrons["n"][2:-2,-1][ff]))
-        # f.write("\n")
-
-        # f.write("u (m/s): \n")
-        # for gg in range(0,len(electrons["u"][2:-2,-1])):
-        #     f.write('%s,' %(electrons["u"][2:-2,-1][gg]))
-        # f.write("\n")
-
-        # f.write("P (Pa): \n")
-        # for hh in range(0,len(electrons["P"][2:-2,-1])):
-        #     f.write('%s,' %(electrons["P"][2:-2,-1][hh]))
-        # f.write("\n")
-
-        # f.write("T (K): \n")
-        # for ii in range(0,len(electrons["T"][2:-2,-1])):
-        #     f.write('%s,' %(electrons["T"][2:-2,-1][ii]))
-        # f.write("\n")
-
-        # f.write("kappa: \n")
-        # for jj in range(0,len(electrons["kappa"][2:-2,-1])):
-        #     f.write('%s,' %(electrons["kappa"][2:-2,-1][jj]))
-        # f.write("\n")
-
-
-        # for kk in range(1,num_ionic_species+1):
-        #     f.write("-------%s------- \n" %ions[kk]["name"])
-
-        #     f.write("rho (kg/m^3): \n")
-        #     for ee in range(0,len(ions[kk]["rho"][2:-2,-1])):
-        #         f.write('%s,' %(ions[kk]["rho"][2:-2,-1][ee]))
-        #     f.write("\n")
-
-        #     f.write("n (/m^3): \n")
-        #     for ff in range(0,len(ions[kk]["n"][2:-2,-1])):
-        #         f.write('%s,' %(ions[kk]["n"][2:-2,-1][ff]))
-        #     f.write("\n")
-
-        #     f.write("u (m/s): \n")
-        #     for gg in range(0,len(ions[kk]["u"][2:-2,-1])):
-        #         f.write('%s,' %(ions[kk]["u"][2:-2,-1][gg]))
-        #     f.write("\n")
-
-        #     f.write("P (Pa): \n")
-        #     for hh in range(0,len(ions[kk]["P"][2:-2,-1])):
-        #         f.write('%s,' %(ions[kk]["P"][2:-2,-1][hh]))
-        #     f.write("\n")
-
-        #     f.write("T (K): \n")
-        #     for ii in range(0,len(ions[kk]["T"][2:-2,-1])):
-        #         f.write('%s,' %(ions[kk]["T"][2:-2,-1][ii]))
-        #     f.write("\n")
-
-        #     f.write("kappa: \n")
-        #     for jj in range(0,len(ions[kk]["kappa"][2:-2,-1])):
-        #         f.write('%s,' %(ions[kk]["kappa"][2:-2,-1][jj]))
-        #     f.write("\n")
-
-        f.close()
 
 
 
     pl.subplots_adjust(hspace=0.0,wspace=0.5)
-    return b_temp,j
+    return b_temp,j,n_den_H,n_den_H3_plus
