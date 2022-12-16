@@ -469,19 +469,19 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts,b_temp,j):
     # ----------ION DENSITY-------------
     H_scale = 2*z[0]
     # floor validated by Constable Vlasov simulations
-    n_H_plus_floor = 6*10**7#6*10**7#4*10**5#6e4 #2*10**6
-    n_H_plus[2:-2,0] = 2*10**9*np.exp(-(z/(H_scale*((m_H_plus/m_H_plus)*(b_temp/3000))))) + n_H_plus_floor #2*10**9 (subauroral, run 1) #1*10**10 (auroral), #5*10**8 (nonauroral)
-    n_H_plus[0:2,0] =2*10**9*np.exp(-(gb_z/(H_scale*((m_H_plus/m_H_plus)*(b_temp/3000))))) + n_H_plus_floor
-    n_H_plus[-2:,0]=2*10**9*np.exp(-(ge_z/(H_scale*((m_H_plus/m_H3_plus)*(b_temp/3000)))))+ n_H_plus_floor
+    n_H_plus_floor = 6*10**7#6*10**7#4*10**5#6e4 #2*10**6 #scale = 6*10**7
+    n_H_plus[2:-2,0] = 1e10*np.exp(-(z/(H_scale*((m_H_plus/m_H_plus)*(b_temp/3000))))) + n_H_plus_floor #2*10**9 (subauroral, run 1) #1*10**10 (auroral), #5*10**8 (nonauroral)
+    n_H_plus[0:2,0] = 1e10*np.exp(-(gb_z/(H_scale*((m_H_plus/m_H_plus)*(b_temp/3000))))) + n_H_plus_floor
+    n_H_plus[-2:,0]= 1e10*np.exp(-(ge_z/(H_scale*((m_H_plus/m_H3_plus)*(b_temp/3000)))))+ n_H_plus_floor
     rho_H_plus[2:-2,0] = n_H_plus[2:-2,0] * m_H_plus
     rho_H_plus[0:2,0]=n_H_plus[0:2,0] * m_H_plus
     rho_H_plus[-2:,0]=n_H_plus[-2:,0] * m_H_plus
 
     #initial H3+ ion density - exponential decrease place holder
-    n_H3_plus_floor = 10**8#10**8#5.5*10**5#10e4#10**7
-    n_H3_plus[2:-2,0] = 1*10**10*np.exp(-(z/(H_scale*((m_H_plus/m_H3_plus)*(b_temp/3000))))) + n_H3_plus_floor #1*10**10 (subauroral, run 1) #5*10**10 (auroral) #1*10**9 (nonauroral)
-    n_H3_plus[0:2,0]=1*10**10*np.exp(-(gb_z/(H_scale*((m_H_plus/m_H3_plus)*(b_temp/3000))))) + n_H3_plus_floor
-    n_H3_plus[-2:,0]=1*10**10*np.exp(-(ge_z/(H_scale*((m_H_plus/m_H3_plus)*(b_temp/3000))))) + n_H3_plus_floor
+    n_H3_plus_floor = 10**8#10**8#5.5*10**5#10e4#10**7 10**8
+    n_H3_plus[2:-2,0] = 5e10*np.exp(-(z/(H_scale*((m_H_plus/m_H3_plus)*(b_temp/3000))))) + n_H3_plus_floor #1*10**10 (subauroral, run 1) #5*10**10 (auroral) #1*10**9 (nonauroral)
+    n_H3_plus[0:2,0]= 5e10*np.exp(-(gb_z/(H_scale*((m_H_plus/m_H3_plus)*(b_temp/3000))))) + n_H3_plus_floor
+    n_H3_plus[-2:,0]= 5e10*np.exp(-(ge_z/(H_scale*((m_H_plus/m_H3_plus)*(b_temp/3000))))) + n_H3_plus_floor
     rho_H3_plus[2:-2,0] = n_H3_plus[2:-2,0] * m_H3_plus
     rho_H3_plus[0:2,0]=n_H3_plus[0:2,0] * m_H3_plus
     rho_H3_plus[-2:,0]=n_H3_plus[-2:,0] * m_H3_plus
