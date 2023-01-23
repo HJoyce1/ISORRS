@@ -6,7 +6,7 @@ This README file is focused more on the construction of and how to run the model
 
 ## Get Started!
 You can run the `ISORRS_1D_singlefieldline.py` as a function or from command line with arguments:
-`python3 ISORRS_1D_singlefieldline_FAC.py 'jupiter' 0.01 100 3 25 0 0 1 1 'save file name'`
+`python3 ISORRS_1D_singlefieldline.py 'jupiter' 0.01 100 3 25 0 0 1 1 'save file name'`
 Check the docstring to see the argument meanings.
 Same with the other versions of 'MAIN' modules.
 
@@ -23,7 +23,7 @@ MAIN Module set up to run a series of iterations along a single field line at gi
 ### ISORRS_dipolefield.py
 Module developed by Dave Constable at Lancaster University (2019) to generate the dipole field for the planet, centrifugal acceleration and graviational acceleration.
 
-### ISORRS_planet_scale_heights.py
+### ISORRS_planet.py
 Module originally developed by Carley Martin at Lancaster University (2019) to contain initial conditions and functions associated with Jupiter and Saturn. Has been updated by Hannah Joyce at Lancaster University (2022) to contain updated initial conditions better representing the scale-heights of ions and neutrals in Jupiter's ionosphere. 
 
 ### ISORRS_plotting_tools_cb.py
@@ -50,10 +50,7 @@ Lax methodology intended to be merged into the equations module at a future date
 ## Files for Specific Functions
 
 ### ISORRS_1Dsinglefieldline_asymmetries.py
-MAIN Module created to iterate over different conditons in the auroral region. Currently allows for temperature, width, number density and field-aligned current strength to be varied over 'dawn' or 'dusk' conditions.
-
-### ISORRS_planet_den_asym.py
-Version of the PLANET_SCALE_HEIGHTS module specifically designed to work with the ASYMMETRIES MAIN module above. Contains initial conditions for Jupiter and Saturn.
+MAIN Module created to iterate over different conditons in the auroral region. Currently allows for temperature, width, number density and field-aligned current strength to be varied over 'dawn' or 'dusk' conditions. Currently the flags for these need to be changed within the module itself (at the top) rather than through the command line.
 
 ### pw_20190502.py
 MAIN Module - generic file to run overall - need to look into this more. I believe this was written so Carley could print out all
