@@ -5,7 +5,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     import ISORRS_dipolefield as dipolefield
     import ISORRS_equations as iseq
     import ISORRS_planet as planet
-    import ISORRS_plotting_tools_cb as ispl
+    import ISORRS_plotting_tools as ispl
     # ---------------------------------Start Main-------------------------------------
     # main folder to save plots and data to
     # MAC
