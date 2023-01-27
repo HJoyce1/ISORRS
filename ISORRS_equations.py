@@ -47,7 +47,7 @@ def heat_conductivity(T,e_charge,m_i,m_p):
 #Returns: ion heat conductivity
 #Requires: electron temp. electron charge, mass ion, mass proton
 #Ref: Banks&Kockarts1973, Moore+ 2008
-    return ((4.6*10**4.0 *(m_i/m_p)**-0.5 * T**2.5)*e_charge*100.0)#J m-1 s-1 K-1
+    return (4.6*10**4 *(m_i/m_p)**-0.5 * T**2.5)*e_charge*100 #J m-1 s-1 K-1
 #( 4.6x10^4 x (ion mass/ proton mass)^-0.5 x temp^2.5) x electron charge x100
 #==============================================================================
 def heat_conductivity_electrons(T,e_charge,gamma):
@@ -70,7 +70,6 @@ def plasma_temperature(n,k_b,P):
 #Requires: number density, boltzmann constant, pressure
 #Ref: P = nkT
     return (P/(n*k_b))
-
 # pressure / number density x boltzmanns (pressure is from plasma pressure function)
 #==============================================================================
 def E_second_term(electrons,ions,dMdt,num_ionic_species,j):
@@ -85,18 +84,16 @@ def E_second_term(electrons,ions,dMdt,num_ionic_species,j):
     return np.sum(E_tmp,axis=1)
 # create empty array of length dMdt, number of ionic species
 # fill as loop, electron mass / ion mass x( electron velocity - ion velocity) * ion mass production rate - dMdt
-# sum it all up on -1 axis
-# CHECK THIS ONE
+# sum it all up across columns
 #==============================================================================
 def E_parallel_short(e_charge, n_e, dFdt,A, dAdr, rho_e,u_e):
 #Returns: electric field, short term
 
 #Requires: electron charge, electron number density, dFdt = d/dr(P_e - rho_e*u_e^2)
-#          areaA, spatial area differential, electron mass density, electron velocity
+#          areaA, spatial area differential (dAdr), electron mass density, electron velocity
 #Ref: Gombozi+1985, Glocer+ 2007 etc.
     return (-1/(e_charge*n_e) * (dFdt + (dAdr/A)*rho_e*u_e**2))
-# (-1 / electron charge x electron number density) x (dFdt + (dAdr/cross secion area)*mass density electronsxelectron speed^2
-#CHECK THIS ONE
+# (-1 / electron charge x electron number density) x (dPrhou2 + (dAdr/cross secion area)*mass density electronsxelectron speed^2
 #==============================================================================
 def plot_me_quick(x,y,xlabel,ylabel,grid):
 #Returns: plot - also found in pw_plotting tools
@@ -112,8 +109,8 @@ def density_dt_ion(dt,A,S,rho,dFdt):
 #requires: time step, area vector, mass production, mass density
 #           dFdt = d/dr(A rho u)
 #ref: Gombozi+1985, Glocer+ 2007 etc.
-    return (((dt/A)*(A*S-dFdt)) + rho)
-# dt/A x (area of flux tube *mass production -dFdt) +mass density
+    return ((dt/A)*(A*S-dFdt)+rho)
+# dt/A x (area of flux tube *mass production -dArhou) +mass density
 #==============================================================================
 def density_dt_electron(electrons,ions,num_ionic_species,j):
 #returns: electron density
@@ -125,7 +122,7 @@ def density_dt_electron(electrons,ions,num_ionic_species,j):
         term1[:,i-1] = ions[i]["rho"][2:-2,j]/ions[i]["mass"]
     return np.sum(term1,axis=1)*electrons["mass"]
 # empty array of length ions number density -4, number of ions
-# in loop add ion mass density / ion mass
+# in loop add ion mass density / ion mass for each ion species
 # then sum this * electron mass
 #==============================================================================
 def velocity_dt_ion(dt,A,rho,rho_1,dFdr,dPdr,m_i,E,e_charge,ag,dMdt,u,S,ac):
@@ -138,15 +135,14 @@ def velocity_dt_ion(dt,A,rho,rho_1,dFdr,dPdr,m_i,E,e_charge,ag,dMdt,u,S,ac):
 #ref: Gombozi+1985, Glocer+ 2007 etc.
     return ((dt/(A*rho_1))*(-dFdr - (A*dPdr) +(A*rho*((e_charge/m_i)*E - ag + ac)) + \
            A*dMdt + A*u*S)+((rho*u)/rho_1))
-        # ((dt/ cross section areax rho_1? )) * (-dArhou2 - (area*dPdr) + (area* mass density*((electron charge/ion mass)* E field
+        # (((dt/ cross section areax rho_1 )) * (-dArhou2 - (area*dPdr) + (area* mass density*((electron charge/ion mass)* E field
         # - gravitational acceleration  + centrifugal acceleration)) + area x dMdt + area x velocity x mass production) +
-        # ((mass density x velocity/ rho_1
-        # CHECK THIS
+        # (mass density x velocity/ rho_1))
 #==============================================================================
 def velocity_dt_electron(electrons,ions,num_ionic_species,j,cd,e_charge):
 #returns: electron velocity
 #requires:electron dictionary, ion dictionary, number of ionic species,
-#         iteration, current density, electron charge
+#         iteration, current density (cd), electron charge
 #ref: Gombozi+1985, Glocer+ 2007 etc.
     import numpy as np
     term1 = np.empty([len(ions[1]["n"])-4,num_ionic_species])
@@ -154,8 +150,8 @@ def velocity_dt_electron(electrons,ions,num_ionic_species,j,cd,e_charge):
         term1[:,i-1] = ions[i]["n"][2:-2,j]*ions[i]["u"][2:-2,j]
     return 1/electrons["n"][2:-2,j] * (np.sum(term1,axis=1) - cd[2:-2]/e_charge)
 # empty array made of length ion number density - 4, number of ionic species
-# in loop: number density of ions * ion velocity (3rd to 3rd to last term, axis j (to remove ghost points)
-# then 1/ electron number density * sum of loop
+# in loop: number density of ions * ion velocit (remove ghost points)
+# then 1/ electron number density * sum of loop (column axis)
 #==============================================================================
 def pressure_dt_ion(dt,A,gamma,rho,rho_1,u,u_1,m_i, e_charge,E,ag,dEdt,dMdt,P,dEngdr,dakTdr,S,ac):
 #returns: ion pressure
@@ -172,7 +168,6 @@ def pressure_dt_ion(dt,A,gamma,rho,rho_1,u,u_1,m_i, e_charge,E,ag,dEdt,dMdt,P,dE
         # (((dt/area) x gamma -1 x (-dEngdr + areaxmass density x velocity x (electron charge / ion mass) x electric field -
         #gravitational field + centrifugal acceleration ) + dakTdr + area x dEdt + area x velocity x dMdt + 0.5 x area x velocity^2
         # x mass production ) + (0.5x mass density x velocity^2 x (gamma -1)) + pressure - (0.5 x rho_1 x u_1^2 x gamma -1))
-        # CHECK THIS
 #==============================================================================
 def temperature_dt_electron(dt,gamma,m_e,k_b,A,rho,u,T,S,dTedr,dAudr,dakTedr):
 #returns: electron temperature
@@ -184,7 +179,6 @@ def temperature_dt_electron(dt,gamma,m_e,k_b,A,rho,u,T,S,dTedr,dAudr,dakTedr):
     return (dt*((gamma-1)*(m_e/(k_b*A*rho))*dakTedr-u*dTedr-(T/rho)*(S+((gamma-1)/A)*rho*dAudr))+T)
 # dt *( gamma -1 x (electron mass / boltzmann x area x mass density)) x dakTedr - velocity x dTedr - (temp/mass density) x
 # (mass production +( gamma -1)/area) x mass density x dAudr) + temp
-# CHECK THIS
 #==============================================================================
 def electron_flux2(ions,num_ionic_species,j):
 #returns: electron flux
@@ -197,7 +191,7 @@ def electron_flux2(ions,num_ionic_species,j):
     return np.sum(term1,axis=1)
 # empty array of length ion number density -4, number of ion species
 # loop: number density ions x ion velocity
-# sum up terms
+# sum up terms on column axis
 #==============================================================================
 def electron_flux_e(electrons,j):
 #returns: electron flux
@@ -211,21 +205,18 @@ def eV2vel(eV, m):
     import numpy as np
     return np.sqrt((eV*2*1.6*10**-19)/(m))
 # square root of: eV x 2 x 1.6e-19 / m
-# CHECK THIS
 #==============================================================================
 def vel2eV(vel, m):
 #returns: electron volts
 #requires:velocity, mass
     return (m*vel**2)/(2*1.6*10**-19)
 # m x vel^2 / 2x1.6e19
-# CHECK THIS
 #==============================================================================
 def v2T(v,m):
 #returns: temperature
 #requires: velocity, mass
     return (m*v**2)/(2*1.38*10**-23)
 # m x v^2 / 2 x 1.38^-23
-# CHECK THIS
 #==============================================================================
 def T2v(T,m):
 #returns: velocity
@@ -233,7 +224,6 @@ def T2v(T,m):
     import numpy as np
     return np.sqrt((2*1.38*10**-23*T)/m)
 # square root of:( 2x1.38^-23 x temp) / m
-# CHECK THIS
 #==============================================================================
 def extrap_end(a):
 #returns: two values to fill ghost points by extrapolating the function a
