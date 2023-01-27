@@ -14,7 +14,6 @@ Check the docstring to see the argument meanings.
 
 # Contents
 
-## Current Model Version Files:
 
 ### ISORRS_1Dsinglefieldline.py
 MAIN Module set up to run a series of iterations along a single field line at given position on planet.
