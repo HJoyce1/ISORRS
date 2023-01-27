@@ -9,7 +9,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     # ---------------------------------Start Main-------------------------------------
     # main folder to save plots and data to
     # MAC
-    folder = '/Users/hannah/OneDrive - Lancaster University/pw_model/2023/HEC_trials/'
+    folder = '/Users/hannah/OneDrive - Lancaster University/ISORRS/2023/jan/scale_H/'
     # WINDOWS
     #folder = 'C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs_asymmetries/tests/'
 
@@ -34,8 +34,8 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     if planet_name == 'jupiter' or planet_name == 'saturn':
         # ---------------------------------Grid set up-------------------------------------
         inner = 1400000  #lower boundary, 1400km -> 140000m
-        numpoints = int(rs*8000)
-        dz = 7500.0 # grid spacing, 7.5km -> 7500m
+        numpoints = int(rs*8000) #800
+        dz = 7500.0 # grid spacing, 75km -> 7500m
 
         # empty arrays for grid
         z=np.zeros([numpoints,])
@@ -321,7 +321,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
                 dTdr[-1,m-1] = np.nan
 
                 #sign between rho and gamma was +
-                dEngdr[:,m-1]= (np.roll((0.5 * A * ions[m]["u"][:,i-1]**3 * ions[m]["rho"][:,i-1] - gamma/(gamma-1) * A * ions[m]["u"][:,i-1] * ions[m]["P"][:,i-1]),-1)-np.roll((0.5 * A * ions[m]["u"][:,i-1]**3 * ions[m]["rho"][:,i-1] - gamma/(gamma-1) * A * ions[m]["u"][:,i-1] * ions[m]["P"][:,i-1]),1))/(2*dz)
+                dEngdr[:,m-1]= (np.roll((0.5 * A * ions[m]["u"][:,i-1]**3 * ions[m]["rho"][:,i-1] + gamma/(gamma-1) * A * ions[m]["u"][:,i-1] * ions[m]["P"][:,i-1]),-1)-np.roll((0.5 * A * ions[m]["u"][:,i-1]**3 * ions[m]["rho"][:,i-1] + gamma/(gamma-1) * A * ions[m]["u"][:,i-1] * ions[m]["P"][:,i-1]),1))/(2*dz)
                 dEngdr[0,m-1] = np.nan
                 dEngdr[-1,m-1] = np.nan
 
@@ -343,7 +343,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
             dTedr[0] = np.nan
             dTedr[-1] = np.nan
 
-            dPrhou2 = (np.roll(electrons["P"][:,i-1]-electrons["rho"][:,i-1]*electrons["u"][:,i-1]**2,-1)-np.roll(electrons["P"][:,i-1]-electrons["rho"][:,i-1]*electrons["u"][:,i-1]**2,1))/(2*dz)
+            dPrhou2 = (np.roll(electrons["P"][:,i-1]+electrons["rho"][:,i-1]*electrons["u"][:,i-1]**2,-1)-np.roll(electrons["P"][:,i-1]+electrons["rho"][:,i-1]*electrons["u"][:,i-1]**2,1))/(2*dz)
             '''!!! between P and rho was +'''
             dPrhou2[0] = np.nan
             dPrhou2[-1] = np.nan
