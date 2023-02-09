@@ -9,7 +9,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     # ---------------------------------Start Main-------------------------------------
     # main folder to save plots and data to
     # MAC
-    folder = '/Users/hannah/OneDrive - Lancaster University/ISORRS/2023/jan/scale_H/'
+    folder = '/Users/hannah/OneDrive - Lancaster University/ISORRS/2023/feb/'
     # WINDOWS
     #folder = 'C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs_asymmetries/tests/'
 
@@ -34,8 +34,8 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     if planet_name == 'jupiter' or planet_name == 'saturn':
         # ---------------------------------Grid set up-------------------------------------
         inner = 1400000  #lower boundary, 1400km -> 140000m
-        numpoints = int(rs*8000) #800
-        dz = 7500.0 # grid spacing, 75km -> 7500m
+        numpoints = int(rs*800) #800
+        dz = 75000.0 # grid spacing, 75km -> 7500m
 
         # empty arrays for grid
         z=np.zeros([numpoints,])
@@ -106,6 +106,12 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
         ion2_flux[:,0] = np.nan # no initial values for electron flux
         ion_flux_tot = np.empty([len(z)+4,its])
         ion_flux_tot[:,0] = np.nan # no initial values for total ion flux
+        
+        # E = np.zeros(len(z)+4)
+        # e_flux = np.zeros(len(z)+4)
+        # ion1_flux = np.zeros(len(z)+4)
+        # ion2_flux = np.zeros(len(z)+4)
+        # ion_flux_tot = np.zeros(len(z)+4)
 
         # unpack constants from dipole module
         radius = consts[0]
@@ -118,11 +124,20 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
         num_ionic_species = len(ions)
         num_neutral_species = len(neutrals)
 
-        # # create empty arrays for looking at what the iterations are doing
-        # ion_its= np.empty([len(z_ext),its,num_ionic_species,])
-        # elec_its= np.empty([len(z_ext),its])
-        # ion_its_T = np.empty([len(z_ext),its,num_ionic_species,])
-        # elec_its_T = np.empty([len(z_ext),its])
+        # create empty arrays for looking at what the iterations are doing
+        ion_its_n= np.empty([len(z_ext),its,num_ionic_species,])
+        ion_its_rho= np.empty([len(z_ext),its,num_ionic_species,])
+        ion_its_P= np.empty([len(z_ext),its,num_ionic_species,])
+        ion_its_T = np.empty([len(z_ext),its,num_ionic_species,])
+        ion_its_u= np.empty([len(z_ext),its,num_ionic_species,])
+        ion_its_kappa= np.empty([len(z_ext),its,num_ionic_species,])
+        
+        elec_its_n= np.empty([len(z_ext),its])
+        elec_its_rho= np.empty([len(z_ext),its])
+        elec_its_P= np.empty([len(z_ext),its])
+        elec_its_T = np.empty([len(z_ext),its])
+        elec_its_u= np.empty([len(z_ext),its])
+        elec_its_kappa= np.empty([len(z_ext),its])
 
         # ------ INITIAL DATA PLOT ------
         # plot input data, if using a lot of runs will want to turn plotting off
@@ -153,7 +168,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
         dTdr= np.empty([len(z_ext),num_ionic_species])
         dEngdr= np.empty([len(z_ext),num_ionic_species])
         dkdr= np.empty([len(z_ext),num_ionic_species])
-        ion_flux = np.empty([len(z_ext),its,num_ionic_species,])
+        ion_flux = np.empty([len(z_ext),its,num_ionic_species])
 
 
         if saves ==1:
@@ -274,10 +289,12 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
 
             f.close()
 
-        # iterations loop
+        # iterations loop 
         # ----------------------------------------------------------------------------
+        counter = 0
+        steady_counter = 0
         for i in range(1,its):
-
+            
         # progress bar:
         # int(32*i/its)*'■' works out the fraction of iterations completed
         # out of the maximum (i/its) multiplies it by 32, turns it into
@@ -371,10 +388,10 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
             for l in range(1,num_ionic_species+1):
                 # mass conservation equation
                 ions[l]["rho"][2:-2,i] = iseq.density_dt_ion(dt,A[2:-2],ions[l]["S"][2:-2],ions[l]["rho"][2:-2,i-1],dArhou[2:-2,l-1].T)
-                ions[l]["rho"][0:2,i]= iseq.extrap_start(ions[l]["rho"][2:-2,i])
+                ions[l]["rho"][0:2,i]= iseq.extrap_start(ions[l]["rho"][2:-2,i])#ions[l]["rho"][0:2,0]#
                 ions[l]["rho"][-2:,i]= iseq.extrap_end(ions[l]["rho"][2:-2,i])
                 ions[l]["n"][2:-2,i] = ions[l]["rho"][2:-2,i] / ions[l]["mass"]
-                ions[l]["n"][0:2,i]= iseq.extrap_start(ions[l]["n"][2:-2,i])
+                ions[l]["n"][0:2,i]= iseq.extrap_start(ions[l]["n"][2:-2,i])#ions[l]["n"][0:2,0]#
                 ions[l]["n"][-2:,i]= iseq.extrap_end(ions[l]["n"][2:-2,i])
 
                 # momentum conservation equation
@@ -383,11 +400,11 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
                 ions[l]["u"][-2:,i]= iseq.extrap_end(ions[l]["u"][2:-2,i])
                 # energy conservation equation
                 ions[l]["P"][2:-2,i] = iseq.pressure_dt_ion(dt,A[2:-2],gamma,ions[l]["rho"][2:-2,i-1],ions[l]["rho"][2:-2,i],ions[l]["u"][2:-2,i-1],ions[l]["u"][2:-2,i],ions[l]["mass"], e_charge,E[2:-2,i],-ag,dEdt[2:-2,l-1],dMdt[2:-2,l-1],ions[l]["P"][2:-2,i-1],dEngdr[2:-2,l-1].T, dakTdr[2:-2].T,ions[l]["S"][2:-2],ac)
-                ions[l]["P"][0:2,i]= iseq.extrap_start(ions[l]["P"][2:-2,i])
-                ions[l]["P"][-2:,i]= iseq.extrap_end(ions[l]["P"][2:-2,i])
+                ions[l]["P"][0:2,i]= iseq.extrap_start(ions[l]["P"][2:-2,i])#ions[l]["P"][0:2,0]
+                ions[l]["P"][-2:,i]= iseq.extrap_end(ions[l]["P"][2:-2,i])#ions[l]["P"][0:2,0]#ions[l]["P"][-2:,0]
                 ions[l]["T"][2:-2,i] = iseq.plasma_temperature(ions[l]["n"][2:-2,i],k_b,ions[l]["P"][2:-2,i])
-                ions[l]["T"][0,i]=400
-                ions[l]["T"][1,i]=400
+                ions[l]["T"][0,i]=b_temp
+                ions[l]["T"][1,i]=b_temp
                 ions[l]["T"][-2:,i]= iseq.plasma_temperature(ions[l]["n"][-2:,i],k_b,ions[l]["P"][-2:,i])
                 # heat conductivities
                 ions[l]["kappa"][2:-2,i] = iseq.heat_conductivity(ions[l]["T"][2:-2,i],e_charge,ions[l]["mass"],m_p)
@@ -434,18 +451,46 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
             # total ion flux
             ion_flux_tot[2:-2,i] = np.add(ion_flux[2:-2,i,0],ion_flux[2:-2,i,1])
 
-
             # # calculate absolute different between each iteration
-            # for b in range(1,num_ionic_species+1):
-            #     ion_its[2:-2,i,b-1] = np.abs(ions[b]["rho"][2:-2,i]-ions[b]["rho"][2:-2,i-1])/ions[b]["rho"][2:-2,i-1]
-            #     ion_its_T[2:-2,i,b-1] = np.abs(ions[b]["T"][2:-2,i]-ions[b]["T"][2:-2,i-1])/ions[b]["T"][2:-2,i-1]
-            # elec_its[2:-2,i] = np.abs(electrons["rho"][2:-2,i]-electrons["rho"][2:-2,i-1])/electrons["rho"][2:-2,i-1]
-            # elec_its_T[2:-2,i] = np.abs(electrons["T"][2:-2,i]-electrons["T"][2:-2,i-1])/electrons["T"][2:-2,i-1]
-
+            for b in range(1,num_ionic_species+1):
+                ion_its_n[2:-2,i,b-1] = np.abs(ions[b]["n"][2:-2,i]-ions[b]["n"][2:-2,i-1])/ions[b]["n"][2:-2,i-1]
+                ion_its_rho[2:-2,i,b-1] = np.abs(ions[b]["rho"][2:-2,i]-ions[b]["rho"][2:-2,i-1])/ions[b]["rho"][2:-2,i-1]
+                ion_its_P[2:-2,i,b-1] = np.abs(ions[b]["P"][2:-2,i]-ions[b]["P"][2:-2,i-1])/ions[b]["P"][2:-2,i-1]
+                ion_its_T[2:-2,i,b-1] = np.abs(ions[b]["T"][2:-2,i]-ions[b]["T"][2:-2,i-1])/ions[b]["T"][2:-2,i-1]
+                ion_its_u[2:-2,i,b-1] = np.abs(ions[b]["u"][2:-2,i]-ions[b]["u"][2:-2,i-1])/ions[b]["u"][2:-2,i-1]
+                ion_its_kappa[2:-2,i,b-1] = np.abs(ions[b]["kappa"][2:-2,i]-ions[b]["kappa"][2:-2,i-1])/ions[b]["kappa"][2:-2,i-1]
+                
+            elec_its_n[2:-2,i] = np.abs(electrons["n"][2:-2,i]-electrons["n"][2:-2,i-1])/electrons["n"][2:-2,i-1]
+            elec_its_rho[2:-2,i] = np.abs(electrons["rho"][2:-2,i]-electrons["rho"][2:-2,i-1])/electrons["rho"][2:-2,i-1]
+            elec_its_P[2:-2,i] = np.abs(electrons["P"][2:-2,i]-electrons["P"][2:-2,i-1])/electrons["P"][2:-2,i-1]
+            elec_its_T[2:-2,i] = np.abs(electrons["T"][2:-2,i]-electrons["T"][2:-2,i-1])/electrons["T"][2:-2,i-1]
+            elec_its_u[2:-2,i] = np.abs(electrons["u"][2:-2,i]-electrons["u"][2:-2,i-1])/electrons["u"][2:-2,i-1]
+            elec_its_kappa[2:-2,i] = np.abs(electrons["kappa"][2:-2,i]-electrons["kappa"][2:-2,i-1])/electrons["kappa"][2:-2,i-1]
+            
+            
+            counter +=1
+            if counter >= 100:
+                steady = ((ions[1]["n"][2:-2,i] - ions[1]["n"][2:-2,i-1])/ions[1]["n"][2:-2,i-1])*100#ions[1]["T"]
+                # if counter == 100:
+                #     stabil_plot = stability[:,0]
+                #breakpoint()
+                #     fig, ax = pl.subplots(figsize=(6,6))
+                #     pl.imshow(stabil_plot)
+                if len(steady[steady>abs(0.1)]) == 0:
+                    steady_counter += 1
+                    if steady_counter == 100:
+                        print('Quasi-steady @: %s iterations' %counter)
+                        its = counter
+                        break
 
         # END OF ITERATIONS LOOP
-        #--------------------------------------
-
+        #-----------------------------------
+        # temps = ions[1]["T"]
+        # velo = ions[1]["u"]
+        # pres = ions[1]["P"]
+        # nums = ions[1]["n"]
+    
+        #breakpoint()
         # --------- END OF RUN PLOTS -------
         # plots 2 figures, variables based on final iteration and results plot with electric field and fluxes
         if plots ==1:
@@ -467,14 +512,14 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
 
 
         # calculating total particle source
-        ind = np.max(np.where(z<40000000)) +1 # at altitude where flux plateaus
+        ind = np.max(np.where(z<20000000)) +1 # at altitude where flux plateaus
         elef = e_flux[ind,-1] # electron flux at specific point
         ionf = np.empty([num_ionic_species])
         for v in range(1,num_ionic_species+1):
             ionf[v-1] = ion_flux[ind,-1,v-1]#/ A[ind] # ion flux at specific point
 
-        arc = width/360 * 2*np.pi*(radius+40000000) # auroral arc of specific deg width
-        circ = 2*np.pi*(radius+40000000)*np.sin(np.deg2rad(colat)) # auroral arc centred on colatitude point
+        arc = width/360 * 2*np.pi*(radius+20000000) # auroral arc of specific deg width
+        circ = 2*np.pi*(radius+20000000)*np.sin(np.deg2rad(colat)) # auroral arc centred on colatitude point
         # circ is angle between centre of planet and the arc
 
         # calculate total particle source
@@ -607,15 +652,15 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     #        pl.savefig(folder+'compare_plot_%s_%s.png' %(planet_name,run_name))
 
 
-    #if saves ==1:
+    if saves ==1:
         # This new piece of code saves polar wind calculations for all
         # iterations to NumPy pickle files.  This code is hacked together
         # to export specifically for Jupiter and isn't general, so if this
         # is tried with Saturn then won't work correctly.  This only saves the
         # first 100 iterations to save space (the its_to_save variable contains
         # the ranges of iterations to save).
-        # its_to_save = range(0,100,1)
-        # np.savez('polar_wind_output_alliter_{}_{}'.format(planet_name,run_name),
+        # its_to_save = range(0,250,1)
+        # np.savez('output_alliter_{}_{}'.format(planet_name,run_name),
         #         n_hplus=ions[1]["n"][2:-2,its_to_save],
         #         n_h3plus=ions[2]["n"][2:-2,its_to_save],
         #         n_e=electrons["n"][2:-2,its_to_save],
@@ -631,9 +676,29 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
         #         flux_hplus=ion_flux[:,its_to_save,0],
         #         flux_h3plus=ion_flux[:,its_to_save,1],
         #         flux_el=e_flux[:,its_to_save],
-        #         its_hplus=ion_its[:,its_to_save,0], #added these two so can use them in pickles
-        #         its_h3plus=ion_its[:,its_to_save,1],
         #         z=z, iterations=np.array(its_to_save))
+        
+        its_to_save = range(0,10000,1)
+        np.savez('output_alliter_{}_{}'.format(planet_name,run_name),
+                n_its_hplus=ion_its_n[:,its_to_save,0], #added these two so can use them in pickles
+                n_its_h3plus=ion_its_n[:,its_to_save,1],
+                rho_its_hplus=ion_its_rho[:,its_to_save,0],
+                rho_its_h3plus=ion_its_rho[:,its_to_save,1],
+                P_its_hplus=ion_its_P[:,its_to_save,0],
+                P_its_h3plus=ion_its_P[:,its_to_save,1],
+                T_its_hplus=ion_its_T[:,its_to_save,0],
+                T_its_h3plus=ion_its_T[:,its_to_save,1],
+                u_its_hplus=ion_its_u[:,its_to_save,0],
+                u_its_h3plus=ion_its_u[:,its_to_save,1],
+                kappa_its_hplus=ion_its_kappa[:,its_to_save,0],
+                kappa_its_h3plus=ion_its_kappa[:,its_to_save,1],
+                n_its_elec=elec_its_n[:,its_to_save],
+                rho_its_elec=elec_its_rho[:,its_to_save],
+                P_its_elec=elec_its_P[:,its_to_save],
+                T_its_elec=elec_its_T[:,its_to_save],
+                u_its_elec=elec_its_u[:,its_to_save],
+                kappa_its_elec=elec_its_kappa[:,its_to_save],
+                z=z, iterations=np.array(its_to_save))
 
     # write all output data to file
     # includes variables after final iteration, TPS, TMS, electric field data
