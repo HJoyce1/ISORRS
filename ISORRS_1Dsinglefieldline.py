@@ -4,7 +4,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     import matplotlib.pyplot as pl
     import ISORRS_dipolefield as dipolefield
     import ISORRS_equations as iseq
-    import ISORRS_planet as planet
+    import ISORRS_planet_WIP as planet
     import ISORRS_plotting_tools as ispl
     # ---------------------------------Start Main-------------------------------------
     # main folder to save plots and data to
@@ -291,7 +291,11 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
 
         # iterations loop 
         # ----------------------------------------------------------------------------
-        counter = 0
+        # counter starts at 1, represents iteration number
+        counter = 1
+        # this counter represents the number of times the percentage change 
+        # between two iterations is less than 0.1% 
+        # start at 0 as no iterations have been confirmed quasi-steady
         steady_counter = 0
         for i in range(1,its):
             
@@ -382,6 +386,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
             E[2:-2,i] = iseq.E_parallel_short(e_charge, electrons["n"][2:-2,i-1].T, dPrhou2[2:-2], A[2:-2].T, dAdr[2:-2], electrons["rho"][2:-2,i-1].T, electrons["u"][2:-2,i-1].T) + 1/(e_charge*electrons["n"][2:-2,i-1]) * dEdr[2:-2].T
             E[0:2,i]=iseq.extrap_start(E[2:-2,i])
             E[-2:,i]=iseq.extrap_end(E[2:-2,i])
+        
 
             # updated values for next step
             # ions
@@ -467,30 +472,27 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
             elec_its_u[2:-2,i] = np.abs(electrons["u"][2:-2,i]-electrons["u"][2:-2,i-1])/electrons["u"][2:-2,i-1]
             elec_its_kappa[2:-2,i] = np.abs(electrons["kappa"][2:-2,i]-electrons["kappa"][2:-2,i-1])/electrons["kappa"][2:-2,i-1]
             
-            
-            counter +=1
-            if counter >= 100:
-                steady = ((ions[1]["n"][2:-2,i] - ions[1]["n"][2:-2,i-1])/ions[1]["n"][2:-2,i-1])*100#ions[1]["T"]
-                # if counter == 100:
-                #     stabil_plot = stability[:,0]
-                #breakpoint()
-                #     fig, ax = pl.subplots(figsize=(6,6))
-                #     pl.imshow(stabil_plot)
-                if len(steady[steady>abs(0.1)]) == 0:
-                    steady_counter += 1
-                    if steady_counter == 100:
-                        print('Quasi-steady @: %s iterations' %counter)
-                        its = counter
-                        break
+            # # loop to check for equilibrium state of the model
+            # # counter increases with every iteration, represents iteration number 
+            # counter +=1
+            # # when counter reaches 100, begin check for quasi-stable condition
+            # if counter >= 100:
+            #     steady = ((ions[1]["n"][2:-2,i] - ions[1]["n"][2:-2,i-1])/ions[1]["n"][2:-2,i-1])*100
+            # # checks whole grid to see if any values larger than 0.1%, 
+            # # if there are none, the check is passed and 1 added to counter
+            #     if len(steady[steady>abs(0.1)]) == 0:
+            #         steady_counter += 1
+            # # if check is passed 100 times,discontinue iterations loop and 
+            # # print out iteration in which model is firmly in equilibriium
+            #         if steady_counter == 100:
+            #             print('Quasi-steady @: %s iterations' %counter)
+            #             its = counter
+            #             break
 
         # END OF ITERATIONS LOOP
         #-----------------------------------
-        # temps = ions[1]["T"]
-        # velo = ions[1]["u"]
-        # pres = ions[1]["P"]
-        # nums = ions[1]["n"]
-    
-        #breakpoint()
+
+
         # --------- END OF RUN PLOTS -------
         # plots 2 figures, variables based on final iteration and results plot with electric field and fluxes
         if plots ==1:
@@ -541,146 +543,24 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
         print('Total Mass Source [kgs^-1]:')
         print(TMS)
 
-            # pl.figure(6)
-            # # for k in range(1,num_ionic_species+1):
-            # #     pl.plot(z/1000,ions[k]["S"][2:-2])
-            # for j in range(0,10000,5):
-            #     pl.plot(z/1000,ions[1]["n"][2:-2,j])
-            #     pl.xlabel('Distance (km)')
-            #     pl.ylabel('Number  Density(m^-3)')
-            #     pl.yscale('log')
-            #     pl.title('Iterations Plot')
-            #     pl.savefig(folder+'ion_iteration_plot_%s_%s_%s.png' %(planet_name,ions[1]['name'],run_name))
-
-            # #ITERATIONS PLOTTING
-            # pl.figure(7)
-            # pl.figure(figsize=(10,6))
-            # pl.subplot(3,1,1)
-            # pl.plot(z/1000,ion_its[2:-2,:,0])
-            # pl.title('Percentage Change of Mass Density')
-            # pl.yscale('log')
-            # pl.ylabel('H+ Percentage Change')
-
-            # pl.subplot(3,1,2)
-            # pl.plot(z/1000,ion_its[2:-2,:,1])
-            # pl.yscale('log')
-            # pl.ylabel('H3+ Percentage Change')
-
-
-            # pl.subplot(3,1,3)
-            # pl.plot(z/1000,elec_its[2:-2,:])
-            # pl.ylabel('e Percentage Change')
-            # pl.xlabel('Distance (km)')
-            # pl.yscale('log')
-            # pl.savefig(folder+'fractional_difference_rho_%s_%s.png'%(planet_name,run_name))
-
-            # pl.figure(8)
-            # pl.figure(figsize=(10,6))
-            # pl.subplot(3,1,1)
-            # pl.plot(z/1000,ion_its_T[2:-2,:,0])
-            # pl.title('Percentage Change of Temperature')
-            # pl.yscale('log')
-            # pl.ylabel('H+ Percentage Change')
-
-            # pl.subplot(3,1,2)
-            # pl.plot(z/1000,ion_its_T[2:-2,:,1])
-            # pl.yscale('log')
-            # pl.ylabel('H3+ Percentage Change')
-
-
-            # pl.subplot(3,1,3)
-            # pl.plot(z/1000,elec_its_T[2:-2,:])
-            # pl.ylabel('e Percentage Change')
-            # pl.xlabel('Distance (km)')
-            # pl.yscale('log')
-            # pl.savefig(folder+'fractional_difference_T_%s_%s.png'%(planet_name,run_name))
-            # pl.show()
-
-        #        pl.figure(3)
-        #     ispl.species_plot(z,z_ext,electrons,radius)
-        #     pl.savefig(folder+'species_plot_%s_electrons_%s.png' %(planet_name,run_name))
-        #     for q in range(1,num_ionic_species+1):
-        # #            pl.figure(q+3)
-        #         ispl.species_plot(z,z_ext,ions[q],radius)
-        #         pl.savefig(folder+'species_plot_%s_%s_%s.png' %(planet_name,ions[q]['name'],run_name)
-            #print(ind)
-
-    # if plots ==1:
-    #        # print('Plots on screen')
-    #        import pandas as pd
-    #        carley_graph = pd.read_csv('C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs/march/extracts/uH_plus_extract.csv',index_col=False)
-    #        carley_graph_x = carley_graph.Distance
-    #        carley_graph_y = carley_graph.Velocity
-    #        carley_graph2 = pd.read_csv('C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs/march/extracts/uH3_plus_extract.csv',index_col=False)
-    #        carley_graph_x2 = carley_graph2.Distance
-    #        carley_graph_y2 = carley_graph2.Velocity
-    #        carley_graph3 = pd.read_csv('C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs/march/extracts/ue_extract.csv',index_col=False)
-    #        carley_graph_x3 = carley_graph3.Distance
-    #        carley_graph_y3 = carley_graph3.Velocity
-
-    #         start_step = 0#10**6
-    #         end_step = 10**10
-    #         step_size = 10**1
-    #         pl.figure(6)
-    #         pl.figure(figsize=(10,5))
-    # #        pl.subplot(3,1,1)
-    # #        pl.plot(carley_graph_x, carley_graph_y)
-    #         pl.plot(z/1000,ions[1]["n"][2:-2,0])
-    #         pl.plot(z/1000,ions[2]["n"][2:-2,0])
-    #         pl.legend(['H+','H3+'])
-    #         pl.xlabel('Distance (km)')
-    #         pl.ylabel('Number Density (m^-3)')
-    #         pl.yscale('log')
-    #         pl.yticks(np.arange(start_step,end_step,step_size))
-    #         pl.savefig(folder+'number_densities')
-
-    #        pl.subplot(3,1,2)
-    #        pl.plot(carley_graph_x2, carley_graph_y2)
-    #        pl.plot(z/1000,ions[2]["u"][2:-2,0])
-    #        pl.legend(['Carley','Hannah'])
-    #        # pl.xlabel('Distance (km)')
-    #        pl.ylabel('Velocity(m/s)')
-    #        # pl.yscale('log')
-
-    #        pl.subplot(3,1,3)
-    #        pl.plot(carley_graph_x3, carley_graph_y3)
-    #        pl.plot(z/1000,electrons["u"][2:-2,0])
-    #        pl.legend(['Carley','Hannah'])
-    #        pl.xlabel('Distance (km)')
-    #        pl.ylabel('Velocity(m/s)')
-    #        # pl.yscale('log')
-    #        pl.savefig(folder+'compare_plot_%s_%s.png' %(planet_name,run_name))
-
-
-    if saves ==1:
-        # This new piece of code saves polar wind calculations for all
-        # iterations to NumPy pickle files.  This code is hacked together
-        # to export specifically for Jupiter and isn't general, so if this
-        # is tried with Saturn then won't work correctly.  This only saves the
-        # first 100 iterations to save space (the its_to_save variable contains
-        # the ranges of iterations to save).
-        # its_to_save = range(0,250,1)
-        # np.savez('output_alliter_{}_{}'.format(planet_name,run_name),
-        #         n_hplus=ions[1]["n"][2:-2,its_to_save],
-        #         n_h3plus=ions[2]["n"][2:-2,its_to_save],
-        #         n_e=electrons["n"][2:-2,its_to_save],
-        #         T_hplus=ions[1]["T"][2:-2,its_to_save],
-        #         T_h3plus=ions[2]["T"][2:-2,its_to_save],
-        #         T_e=electrons["T"][2:-2,its_to_save],
-        #         u_hplus=ions[1]["u"][2:-2,its_to_save],
-        #         u_h3plus=ions[2]["n"][2:-2,its_to_save],
-        #         u_e=electrons["u"][2:-2,its_to_save],
-        #         kappa_hplus=ions[1]["kappa"][2:-2,its_to_save],
-        #         kappa_h3plus=ions[2]["kappa"][2:-2,its_to_save],
-        #         kappa_e=electrons["kappa"][2:-2,its_to_save],
-        #         flux_hplus=ion_flux[:,its_to_save,0],
-        #         flux_h3plus=ion_flux[:,its_to_save,1],
-        #         flux_el=e_flux[:,its_to_save],
-        #         z=z, iterations=np.array(its_to_save))
+    # END OF DATA LOOP
+    #-----------------------------------
         
+    if saves ==1:
+        # function to save specific data to a npz file, which can then be 
+        # opened in ISORRS_iterations_plotter.py to prouce countour plots
+        # representative of the data for the number of iterations specificed 
+        # in the range function  
+        
+        # saving the fractional difference between each iteration
+        
+        # range of iterations want to save
         its_to_save = range(0,10000,1)
+        # name oif output file
         np.savez('output_alliter_{}_{}'.format(planet_name,run_name),
-                n_its_hplus=ion_its_n[:,its_to_save,0], #added these two so can use them in pickles
+                # variables saving to file
+                # IONS
+                n_its_hplus=ion_its_n[:,its_to_save,0],
                 n_its_h3plus=ion_its_n[:,its_to_save,1],
                 rho_its_hplus=ion_its_rho[:,its_to_save,0],
                 rho_its_h3plus=ion_its_rho[:,its_to_save,1],
@@ -692,13 +572,16 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
                 u_its_h3plus=ion_its_u[:,its_to_save,1],
                 kappa_its_hplus=ion_its_kappa[:,its_to_save,0],
                 kappa_its_h3plus=ion_its_kappa[:,its_to_save,1],
+                # ELECTRONS
                 n_its_elec=elec_its_n[:,its_to_save],
                 rho_its_elec=elec_its_rho[:,its_to_save],
                 P_its_elec=elec_its_P[:,its_to_save],
                 T_its_elec=elec_its_T[:,its_to_save],
                 u_its_elec=elec_its_u[:,its_to_save],
                 kappa_its_elec=elec_its_kappa[:,its_to_save],
+                # save grid and iterations
                 z=z, iterations=np.array(its_to_save))
+
 
     # write all output data to file
     # includes variables after final iteration, TPS, TMS, electric field data
