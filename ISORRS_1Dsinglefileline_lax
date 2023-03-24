@@ -7,6 +7,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     import ISORRS_equations as iseq
     import ISORRS_planet as planet
     import ISORRS_plotting_tools as ispl
+    import ISORRS_CN as CN
     # ---------------------------------Start Main-------------------------------------
     # main folder to save plots and data to
     # MAC
@@ -426,14 +427,14 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
                     #print(len(ions[ma]["T"][:,i-1]))
                     #print(len(T_temp))
                     #breakpoint()
-                    T_temp[:,ma-1] = Crank_Nicolson(dz,len(z)+4,dt,2,1.0,ions[ma]["T"][:,i-1])
+                    T_temp[:,ma-1] = CN.Crank_Nicolson(dz,len(z)+4,dt,2,1.0,ions[ma]["T"][:,i-1])
                     d2Tdr[1:-1,ma-1] = (T_temp[:,ma-1] - ions[ma]["T"][1:-1,i-1])/dt
                     d2Tdr[0,ma-1] = 0.0
                     d2Tdr[-1,ma-1] = 0.0
                     
                     dakTdr[:,ma-1] = (A * ions[ma]["kappa"][:,i-1] * d2Tdr[:,m-1]) + (A * dkdr[:,ma-1] * dTdr[:,ma-1]) + (dAdr * ions[ma]["kappa"][:,i-1]* dTdr[:,ma-1])
                 
-                T_temp_e = Crank_Nicolson(dz,len(z)+4,dt,2,1.0,electrons["T"][:,i-1])
+                T_temp_e = CN.Crank_Nicolson(dz,len(z)+4,dt,2,1.0,electrons["T"][:,i-1])
                 d2Tdr_e[1:-1]  = (T_temp_e - electrons["T"][1:-1,i-1])/dt
                     
                 #dakTdr_H3 = (A * kappa_H3_plus[:,i-1] * d2Tdr_H3) + (A * dkdr_H3 * dTdr_H3) + (dAdr * kappa_H3_plus[:,i-1]* dTdr_H3)
