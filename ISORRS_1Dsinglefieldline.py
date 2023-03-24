@@ -3,8 +3,8 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     import numpy as np
     import matplotlib.pyplot as pl
     import ISORRS_dipolefield as dipolefield
-    import ISORRS_equations_WIP as iseq
-    import ISORRS_planet_WIP as planet
+    import ISORRS_equations as iseq
+    import ISORRS_planet as planet
     import ISORRS_plotting_tools as ispl
     import ISORRS_CN as CN
     # ---------------------------------Start Main-------------------------------------
