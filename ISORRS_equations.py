@@ -45,7 +45,7 @@ def energy_rate_1species(rho_i,rho_n,m_i,m_j,lambda_n, e_charge,T_j,T_i,u_i,k_b)
 #==============================================================================
 def heat_conductivity(T,e_charge,m_i,m_p):
 #Returns: ion heat conductivity
-#Requires: electron temp. electron charge, mass ion, mass proton
+#Requires: electron temp. electron charge, mass ion, mass neutral
 #Ref: Banks&Kockarts1973, Moore+ 2008
     return (4.6*10**4 *(m_i/m_p)**-0.5 * T**2.5)*e_charge*100 #J m-1 s-1 K-1
 #( 4.6x10^4 x (ion mass/ proton mass)^-0.5 x temp^2.5) x electron charge x100
@@ -72,7 +72,7 @@ def plasma_temperature(n,k_b,P):
     return (P/(n*k_b))
 # pressure / number density x boltzmanns (pressure is from plasma pressure function)
 #==============================================================================
-def E_second_term(electrons,ions,dMdt,num_ionic_species,j):
+def E_second_term(electrons,ions,dMdt,num_ionic_species,j,dMdt_e):
 #Returns: extended electric field calculation
 #Requires: electron dictionary, ion dictionary, momentum exchange rate, number
 #       ionic species, iteration number
@@ -81,7 +81,8 @@ def E_second_term(electrons,ions,dMdt,num_ionic_species,j):
     E_tmp = np.empty([len(dMdt),num_ionic_species])
     for i in range(1,num_ionic_species+1):
         E_tmp[:,i-1] = (electrons["mass"]/ions[i]["mass"] * ((electrons["u"][:,j-1]-ions[i]["u"][:,j-1])*ions[i]["S"]-dMdt[:,i-1]))
-    return np.sum(E_tmp,axis=1)
+        DE = np.sum(E_tmp,axis=1) 
+    return DE +dMdt_e
 # create empty array of length dMdt, number of ionic species
 # fill as loop, electron mass / ion mass x( electron velocity - ion velocity) * ion mass production rate - dMdt
 # sum it all up across columns
@@ -169,14 +170,15 @@ def pressure_dt_ion(dt,A,gamma,rho,rho_1,u,u_1,m_i, e_charge,E,ag,dEdt,dMdt,P,dE
         #gravitational field + centrifugal acceleration ) + dakTdr + area x dEdt + area x velocity x dMdt + 0.5 x area x velocity^2
         # x mass production ) + (0.5x mass density x velocity^2 x (gamma -1)) + pressure - (0.5 x rho_1 x u_1^2 x gamma -1))
 #==============================================================================
-def temperature_dt_electron(dt,gamma,m_e,k_b,A,rho,u,T,S,dTedr,dAudr,dakTedr):
+def temperature_dt_electron(dt,gamma,m_e,k_b,A,rho,u,T,S,dTedr,dAudr,dakTedr,dEdt_e):
 #returns: electron temperature
 #requires:time step,specific heat, electron mass, boltzmann constant, area,
 #         electronmass density, electron velocity, electron temperature,
 #         electron mass production, dTedr- temp differential, dAudr - d/dr(au)
 #         dakTedr - electron heat conduction equation
 #ref: Gombozi+1985, Glocer+ 2007 etc
-    return (dt*((gamma-1)*(m_e/(k_b*A*rho))*dakTedr-u*dTedr-(T/rho)*(S+((gamma-1)/A)*rho*dAudr))+T)
+    return (dt*((gamma-1)*(m_e/(k_b*A*rho))*dakTedr+((gamma-1)*((m_e/k_b)*dEdt_e))-u*dTedr-(T/rho)*(S+((gamma-1)/A)*rho*dAudr))+T)
+# extra rho in me/kb*A*rho?
 # dt *( gamma -1 x (electron mass / boltzmann x area x mass density)) x dakTedr - velocity x dTedr - (temp/mass density) x
 # (mass production +( gamma -1)/area) x mass density x dAudr) + temp
 #==============================================================================
