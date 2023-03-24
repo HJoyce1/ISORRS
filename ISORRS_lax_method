@@ -1,8 +1,9 @@
 # module designed to replace numerical method used with the lax method
 # this is currently a work in progress and thus is not yet intergrated into the equations module
 
+import numpy as np
+
 def density_lax_ion(dt,A,rho,u,S,dx):
-    import numpy as np
 #returns: ion density
 #requires: time step, area vectors for current, previous grid position and
 #          next grid position, mass density of previous and next grid
@@ -35,13 +36,11 @@ def velocity_lax_ion(dt,A,rho,u,P,e_charge,m_i,E,ag,ac,dMdt,S,dx,rho_new):
 #          centrifugal force, momentum exchange rate, mass production rate,
 #          spatial step, updated mass density from density_lax
 #ref: Gombozi+1985, Glocer+ 2007 etc
-    import numpy as np
-
     Z = (0.5*(np.roll(A*rho*u,-1) + np.roll(A*rho*u,1)))
-    Y = (np.roll(A*rho*u*u,-1) + np.roll(A*rho*u*u,1))
-    X = ((E*(e_charge/m_i)) - ag + ac)
+    Y = (np.roll(A*rho*u*u,-1) - np.roll(A*rho*u*u,1))
+    X = ((E*(e_charge/m_i)) - np.concatenate(([0,0],ag,[0,0])) + np.concatenate(([0,0],ac,[0,0])))
     phi = (dt*(A*rho*(X)+dMdt + (A*rho*S)))
-    new_u = ((Z - ((0.5*dt/dx*(Y))-(A*(0.5*dt/dx)*(np.roll(P,-1) + np.roll(P,1)))+phi))/(A*rho_new))
+    new_u = ((Z - ((0.5*dt/dx*(Y))-(A*(0.5*dt/dx)*(np.roll(P,-1) - np.roll(P,1)))+phi))/(A*rho_new))
 
     u = new_u[2:-2]
     return u
@@ -55,30 +54,60 @@ def velocity_lax_ion(dt,A,rho,u,P,e_charge,m_i,E,ag,ac,dMdt,S,dx,rho_new):
 #input as: dt,A[i],A[i-1],A[i+1],tmp_ions[l]["rho"][2:-2,i],tmp_ions[l]["rho"][2:-2:,i-1],tmp_ions[l]["rho"][2:-2,i+1],ions[l]["u"][2:-2,i-1],ions[l]["u"][2:-2,i+1],ions[l]["P"][2:-2,i-1],ions[l]["P"][2:-2,i+1],e_charge,ions[l]["mass"],E[2:-2,i],-ag,ac,dMdt[2:-2,l-1],ions[l]["S"][2:-2],dz,ions[l]["rho"][2:-2,i]
 #          dt,A[2:-2],A[1:-3],A[3:-1],tmp_ions[l]["rho"][2:-2,i],tmp_ions[l]["rho"][1:-3:,i],tmp_ions[l]["rho"][3:-1,i],ions[l]["u"][1:-3,i],ions[l]["u"][3:-1,i],ions[l]["P"][1:-3,i],ions[l]["P"][3:-1,i], e_charge, ions[l]["mass"],E[2:-2,i],-ag,ac,dMdt[2:-2,l-1],ions[l]["S"][2:-2],dz,ions[l]["rho"][2:-2,i]
 
-def pressure_lax_ion(dt,A,rho,u,P,gamma,e_charge,m_i,E,ag,ac,dMdt,dEdt,S,dx,rho_new,u_new):
-#returns: ion pressure
-#requires: time step, area vectors for current, previous grid position and
-#          next grid position, mass density for current, previous and next
-#          grid position, velocity of current, previous and next grid position,
-#          pressure at previous and next grid position, specific heat ratio,
-#          charge of electron, mass of ion, electric field, gravitational
-#          acceleration, centrifugal force, momentum exchange rate, energy
-#          exchange rate, mass production rate, spatial step, updated mass
-#          density from density_lax_ion, updated velocity from
-#          velocity_lax_ion
-#ref: Gombozi+1985, Glocer+ 2007 etc
-    import numpy as np
-    Z = (0.5*((np.roll(A*rho*u*u,-1))+(np.roll(A*rho*u*u,1))))
-    Y = (np.roll(A*P,-1)+np.roll(A*P,1))*(1/(gamma-1))
-    X = (0.5*(np.roll(A*rho*u*u*u,-1)+np.roll(A*rho*u*u*u,1)))
-    W = (np.roll(A*u*P,-1)+(np.roll(A*u*P,1)))*(gamma/(gamma-1))
-    V = (A*u*rho*(((e_charge/m_i)*E)-ag+ac))
-    phi = V + dMdt + dEdt + 0.5*A*u*u*S
-    old = (0.5*rho_new*u_new*u_new)
+def pressure_lax_ion(dt,A,rho,u,P,gamma,e_charge,m_i,E,ag,ac,dakTdr,dMdt,dEdt,S,dx,rho_new,u_new):
+    """Step the pressure forward in time using a Lax solver
 
-    new_P = (((0.5*(Z+Y)) - ((0.5*dt/dx)*(X-W)) + dt*phi - old)/((gamma-1)/A))
-    P = new_P[2:-2]
-    return P
+    This returns the new pressure only on the interior points of the grid,
+    but expects points including ghost points.  The exception are the
+    accelerations that are expected to be without ghost cells.
+
+    Args:
+        dt: time step [s]
+        A: flux tube area [m^2]
+        rho: mass density for the last time step [kg/m^3]
+        u: velocity for the last time step [m/s]
+        P: pressure for the last time step [Pa]
+        gamma: gamma factor
+        m_i: ion mass [kg]
+        E: electric field [V/m]
+        ag: gravitational acceleration
+        ac: centrifual acceleration
+        dMdt:
+        dEdt:
+        S: source rate
+        dx: spatial stepsize [m]
+        rho_new: mass density for the new time step [kg/m^3]
+        u_new: velocity for the new time step [m/s]
+
+    Returns:
+        P: ion pressure at the next timestep [Pa]
+
+    ref: Gombozi+1985, Glocer+ 2007 etc
+
+    """
+    # Compute terms that don't have any derivatives in them.
+    V = (A*u*rho*(((e_charge/m_i)*E)-np.concatenate(([0,0],ag,[0,0]))+np.concatenate(([0,0],ac,[0,0]))))
+    phi = dakTdr + dMdt + dEdt + 0.5*A*u*u*S #V+
+
+    # Calculate the energy density (the quantity in the time derivative).
+    H = 0.5*rho*u**2 + P/(gamma-1)
+
+    # Calculate the flux.
+    G = 0.5*rho*u**3 - u*P*gamma/(gamma-1)
+
+    # Form both parts of the Lax solution: 1. compute the diffusive term which
+    # is just the average of the j+1 and j-1 terms for AH; 2. compute the
+    # gradient in the flux.
+    AH_diffusive = 0.5*(np.roll(A*H,-1) + np.roll(A*H,1))
+    AG_gradient = np.roll(A*G,-1) - np.roll(A*G,1)
+
+    # Compute the value of AH at the new timestep.
+    AH_new = AH_diffusive - (0.5*dt/dx)*AG_gradient + (V + phi)*dt
+
+    # Then get the pressure using values of rho and u at the new timestep
+    # to extract P at the next timestep from AH.
+    P_new = (AH_new/A - 0.5*rho_new*u_new**2)*(gamma-1)
+    return P_new[2:-2]
 
 # OLD SECTION PRE-ROLL FUNCTION
     # Z = ((0.5*A_1*rho_1*u_1*u_1)+(A_1*P_1*(1/(gamma-1))))
@@ -91,7 +120,7 @@ def pressure_lax_ion(dt,A,rho,u,P,gamma,e_charge,m_i,E,ag,ac,dMdt,dEdt,S,dx,rho_
 #          dt,A[2:-2],A[1:-3],A[3:-1],tmp_ions[l]["rho"][2:-2,i],tmp_ions[l]["rho"][1:-3:,i],tmp_ions[l]["rho"][3:-1,i],tmp_ions[l]["u"][2:-2,i],tmp_ions[l]["u"][1:-3,i],tmp_ions[l]["u"][3:-1,i],ions[l]["P"][1:-3,i],ions[l]["P"][3:-1,i],gamma,e_charge,ions[l]["mass"],E[2:-2,i],-ag,ac,dMdt[2:-2,l-1],dEdt[2:-2,l-1],ions[l]["S"][2:-2],dz,ions[l]["rho"][2:-2,i],ions[l]["u"][2:-2,i]
 #(dt,A,A_0,A_1,rho,rho_0,rho_1,u,u_0,u_1,P_0,P_1,gamma,e_charge,m_i,E,ag,ac,dMdt,dEdt,S,dx,rho_new,u_new):
 
-def temperature_electron(dt,A,rho,u,T,gamma,S,dx):
+def temperature_electron(dt,A,rho,u,T,gamma,S,dx,dakTedr,rho_new,m_e,k_b,dEdt_e):
 #returns: electron temperature
 #requires: time step,area vectors for current, previous grid position and
 #          next grid position, mass density for current grid position,
@@ -100,13 +129,26 @@ def temperature_electron(dt,A,rho,u,T,gamma,S,dx):
 #          production rate, spatial step
 #ref: Gombozi+1985, Glocer+ 2007 etc
     import numpy as np
-    Z = (rho*u*(dt/(2*dx))*(np.roll(T,-1)+np.roll(T,1)))
-    Y = (T*dt*(S+((gamma-1)/A)*rho*(1/(2*dx))))
-    X = (np.roll(A*u,-1)+np.roll(A*u,1))
-    W = (np.roll(T,-1)+np.roll(T,1))
+    G1 = -rho*u*(np.roll(T,-1)+np.roll(T,1))
+    G2 = -T*(S+((gamma-1)/A)*rho*(np.roll(A*u,-1)-np.roll(A*u,1)))
+    G = G1*G2
+    H = (np.roll(rho*T,-1)+np.roll(rho*T,1))
+    De = (gamma-1)*((m_e/k_b)*dEdt_e)
+    print(dEdt_e)
+    print(De)
 
-    new_T = ((0.5*W)+(Z-(Y*X)/rho))
-    T = new_T[2:-2]
+    rhoT_new = 0.5*H + (0.5*dt/dx)*G +dakTedr + De
+    T_new = rhoT_new/rho_new
+    T = T_new[2:-2]
+
+    # return T
+    # Z = (rho*u*(dt/(2*dx))*(np.roll(T,-1)+np.roll(T,1)))
+    # Y = (T*dt*(S+((gamma-1)/A)*rho*(1/(2*dx))))
+    # X = (np.roll(A*u,-1)+np.roll(A*u,1))
+    # W = (np.roll(T,-1)+np.roll(T,1))
+
+    # new_T = ((0.5*W)+(Z-(Y*X)/rho))
+    # T = new_T[2:-2]
 
     return T
 
