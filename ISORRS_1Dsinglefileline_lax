@@ -5,13 +5,13 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     import ISORRS_dipolefield as dipolefield
     import ISORRS_lax_method as lax
     import ISORRS_equations as iseq
-    import ISORRS_planet as planet
+    import ISORRS_planet_WIP as planet
     import ISORRS_plotting_tools as ispl
     import ISORRS_CN as CN
     # ---------------------------------Start Main-------------------------------------
     # main folder to save plots and data to
     # MAC
-    folder = '/Users/hannah/OneDrive - Lancaster University/ISORRS/2023/march/'
+    folder = '/Users/hannah/OneDrive - Lancaster University/ISORRS/2023/april/'
     # WINDOWS
     #folder = 'C:/Users/joyceh1/OneDrive - Lancaster University/pw_model/test_runs_asymmetries/tests/'
 
@@ -24,11 +24,12 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
     currents = 'upward'  # change to downward if want downward currents
 
     j = 3.7e-11 # field aligned current strength, will be multiplied by area of field lineto get e-6/e-7
-    b_temp = 950 # baseline temperature of ionosphere
-    width = 2 #2 for run 1, nonauroral and auroral, 10 for subauroral
-    colat = 16.6 # colatitude location centred on - 14.7 for dawn auroral
-    den_H_plus = 1e10 # baseline number density ffor H+
-    den_H3_plus = 5e10 # baseline number density for H3+
+    b_temp = 900 # baseline temperature of ionosphere
+    lat_width = 1 #2 for run 1, nonauroral and auroral, 10 for subauroral
+    long_width = 1
+    colat = 14.7 # coltitude location centred on - 14.7 for dusk auroral, 16.6 dawn, 19 subauroral,45 for lshell 2
+    den_H_plus = 5e15 # baseline number density for H+
+    den_H3_plus = 1e16 # baseline number density for H3+
 
     # current direction dependent on how flag set
     if currents == 'downward':
@@ -207,7 +208,8 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
             f.write("Field Aligned Currents removed:1,included:0 =%s\n" %(FAC_flag))
             f.write("Field Aligned Current Strength: %s\n" %(j))
             f.write("Centrifugal Stress  removed:1,included:0 =%s\n" %(CF_flag))
-            f.write("Width of Region (degrees): %s\n" %(width))
+            f.write("Latitudinal Width (degrees): %s\n" %(lat_width))
+            f.write("Longitudinal Width (degrees): %s\n" %(long_width))
             f.write("Colatitude Location (latitude): %s\n" %(colat))
             f.write("Initial Ionospheric Temperature (K): %s\n" %(b_temp))
             f.write("Number of Ionic species=%s\n" %(num_ionic_species))
@@ -450,7 +452,7 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
             E[2:-2,i] = iseq.E_parallel_short(e_charge, electrons["n"][2:-2,i-1].T, dPrhou2[2:-2], A[2:-2].T, dAdr[2:-2], electrons["rho"][2:-2,i-1].T, electrons["u"][2:-2,i-1].T) + 1/(e_charge*electrons["n"][2:-2,i-1]) * dEdr[2:-2]
             E[0:2,i]=iseq.extrap_start(E[2:-2,i])
             E[-2:,i]=iseq.extrap_end(E[2:-2,i])
-            print(dMdt_e)
+            #print(dMdt_e)
         
 
             # updated values for next step
@@ -592,14 +594,14 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
 
 
         # calculating total particle source
-        ind = np.max(np.where(z<20000000)) +1 # at altitude where flux plateaus
+        ind = np.max(np.where(z<50000000)) +1 # at altitude where flux plateaus
         elef = e_flux[ind,-1] # electron flux at specific point
         ionf = np.empty([num_ionic_species])
         for v in range(1,num_ionic_species+1):
             ionf[v-1] = ion_flux[ind,-1,v-1]#/ A[ind] # ion flux at specific point
 
-        arc = width/360 * 2*np.pi*(radius+20000000) # auroral arc of specific deg width
-        circ = 2*np.pi*(radius+20000000)*np.sin(np.deg2rad(colat)) # auroral arc centred on colatitude point
+        arc = lat_width/360 * 2*np.pi*(radius+50000000) # auroral arc of specific deg width
+        circ = long_width/360 * 2*np.pi*(radius+50000000)*np.sin(np.deg2rad(colat)) # auroral arc centred on colatitude point
         # circ is angle between centre of planet and the arc
 
         # calculate total particle source
@@ -683,7 +685,8 @@ def bulk_outflow(planet_name,dt,its,rs,lshell,FAC_flag,CF_flag,plots,saves,run_n
         g.write("Field Aligned Currents removed:1,included:0 =%s\n" %(FAC_flag))
         g.write("Field Aligned Current Strength: %s\n" %(j))
         g.write("Centrifugal Stress  removed:1,included:0 =%s\n" %(CF_flag))
-        g.write("Width of Region (degrees): %s\n" %(width))
+        g.write("Latitudinal Width (degrees): %s\n" %(lat_width))
+        g.write("Longitudinal Width (degrees): %s\n" %(long_width))
         g.write("Colatitude Location (latitude): %s\n" %(colat))
         g.write("Initial Ionospheric Temperature (K): %s\n" %(b_temp))
         g.write("Number of Ionic species=%s\n" %(num_ionic_species))
