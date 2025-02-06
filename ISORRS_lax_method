@@ -134,8 +134,8 @@ def temperature_electron(dt,A,rho,u,T,gamma,S,dx,dakTedr,rho_new,m_e,k_b,dEdt_e)
     G = G1*G2
     H = (np.roll(rho*T,-1)+np.roll(rho*T,1))
     De = (gamma-1)*((m_e/k_b)*dEdt_e)
-    print(dEdt_e)
-    print(De)
+    #print(dEdt_e)
+    #print(De)
 
     rhoT_new = 0.5*H + (0.5*dt/dx)*G +dakTedr + De
     T_new = rhoT_new/rho_new
