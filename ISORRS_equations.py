@@ -177,7 +177,7 @@ def temperature_dt_electron(dt,gamma,m_e,k_b,A,rho,u,T,S,dTedr,dAudr,dakTedr,dEd
 #         electron mass production, dTedr- temp differential, dAudr - d/dr(au)
 #         dakTedr - electron heat conduction equation
 #ref: Gombozi+1985, Glocer+ 2007 etc
-    return (dt*((gamma-1)*(m_e/(k_b*A*rho))*dakTedr+((gamma-1)*((m_e/k_b)*dEdt_e))-u*dTedr-(T/rho)*(S+((gamma-1)/A)*rho*dAudr))+T)
+    return (dt*((gamma-1)*(m_e/(k_b*A*rho))*dakTedr+((gamma-1)*((m_e/k_b)*dEdt_e[2:-2]))-u*dTedr-(T/rho)*(S+((gamma-1)/A)*rho*dAudr))+T)
 # extra rho in me/kb*A*rho?
 # dt *( gamma -1 x (electron mass / boltzmann x area x mass density)) x dakTedr - velocity x dTedr - (temp/mass density) x
 # (mass production +( gamma -1)/area) x mass density x dAudr) + temp
