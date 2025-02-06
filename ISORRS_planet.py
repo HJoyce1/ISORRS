@@ -455,18 +455,18 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts,b_temp,j,n_den_H_plus,n_den_H3_plus
     
     # ----------ION VELOCITY, DEPENDENT ON ION TEMPERATURE-------------
     # initial H+ ion velocity - 1eV proton eV2vel(1,m_H_plus)
-    u_H_plus[2:-2,0] = 1#pw.T2v(T_H_plus[2:-2,0],m_H_plus)
-    u_H_plus[0,0]= 1#pw.T2v(T_H_plus[0,0],m_H_plus)
-    u_H_plus[1,0]= 1#pw.T2v(T_H_plus[1,0],m_H_plus)
-    u_H_plus[-1,0]= 1#pw.T2v(T_H_plus[-1,0],m_H_plus)
-    u_H_plus[-2,0]= 1#pw.T2v(T_H_plus[-2,0],m_H_plus)
+    u_H_plus[2:-2,0] = pw.T2v(T_H_plus[2:-2,0],m_H_plus)
+    u_H_plus[0,0]= pw.T2v(T_H_plus[0,0],m_H_plus)
+    u_H_plus[1,0]= pw.T2v(T_H_plus[1,0],m_H_plus)
+    u_H_plus[-1,0]= pw.T2v(T_H_plus[-1,0],m_H_plus)
+    u_H_plus[-2,0]= pw.T2v(T_H_plus[-2,0],m_H_plus)
         
     # initial H3+ ion velocity - 1eV ion
-    u_H3_plus[2:-2,0] = 1#pw.T2v(T_H3_plus[2:-2,0],m_H3_plus)
-    u_H3_plus[0,0]= 1#pw.T2v(T_H3_plus[0,0],m_H3_plus)
-    u_H3_plus[1,0]= 1#pw.T2v(T_H3_plus[1,0],m_H3_plus)
-    u_H3_plus[-1,0]= 1#pw.T2v(T_H3_plus[-1,0],m_H3_plus)
-    u_H3_plus[-2,0]= 1#pw.T2v(T_H3_plus[-2,0],m_H3_plus)
+    u_H3_plus[2:-2,0] = pw.T2v(T_H3_plus[2:-2,0],m_H3_plus)
+    u_H3_plus[0,0]= pw.T2v(T_H3_plus[0,0],m_H3_plus)
+    u_H3_plus[1,0]= pw.T2v(T_H3_plus[1,0],m_H3_plus)
+    u_H3_plus[-1,0]= pw.T2v(T_H3_plus[-1,0],m_H3_plus)
+    u_H3_plus[-2,0]= pw.T2v(T_H3_plus[-2,0],m_H3_plus)
     
     # ----------ION NUMBER DENSITY-------------
     
