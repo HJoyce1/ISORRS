@@ -354,8 +354,6 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts,b_temp,j,n_den_H_plus,n_den_H3_plus
     import numpy as np
     import ISORRS_equations as pw
     
-    dens = 'carley' # options are 'carley' and 'scales'
-    
     # constants for Jupiter
     radius= 7.1492e7
     mass_planet = 1.898e27 
@@ -449,68 +447,74 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts,b_temp,j,n_den_H_plus,n_den_H3_plus
     
     # ----------ION VELOCITY, DEPENDENT ON ION TEMPERATURE-------------
     # initial H+ ion velocity - 1eV proton eV2vel(1,m_H_plus)
-    u_H_plus[2:-2,0] = pw.T2v(T_H_plus[2:-2,0],m_H_plus)
-    u_H_plus[0,0]= pw.T2v(T_H_plus[0,0],m_H_plus)
-    u_H_plus[1,0]= pw.T2v(T_H_plus[1,0],m_H_plus)
-    u_H_plus[-1,0]= pw.T2v(T_H_plus[-1,0],m_H_plus)
-    u_H_plus[-2,0]= pw.T2v(T_H_plus[-2,0],m_H_plus)
+    u_H_plus[2:-2,0] = pw.T2v(T_H_plus[2:-2,0],m_H_plus)#*0.1
+    u_H_plus[0,0]= pw.T2v(T_H_plus[0,0],m_H_plus)#*0.1
+    u_H_plus[1,0]= pw.T2v(T_H_plus[1,0],m_H_plus)#*0.1
+    u_H_plus[-1,0]= pw.T2v(T_H_plus[-1,0],m_H_plus)#*0.1
+    u_H_plus[-2,0]= pw.T2v(T_H_plus[-2,0],m_H_plus)#*0.1
         
     # initial H3+ ion velocity - 1eV ion
-    u_H3_plus[2:-2,0] = pw.T2v(T_H3_plus[2:-2,0],m_H3_plus)
-    u_H3_plus[0,0]= pw.T2v(T_H3_plus[0,0],m_H3_plus)
-    u_H3_plus[1,0]= pw.T2v(T_H3_plus[1,0],m_H3_plus)
-    u_H3_plus[-1,0]= pw.T2v(T_H3_plus[-1,0],m_H3_plus)
-    u_H3_plus[-2,0]= pw.T2v(T_H3_plus[-2,0],m_H3_plus)
+    u_H3_plus[2:-2,0] = pw.T2v(T_H3_plus[2:-2,0],m_H3_plus)#*0.1 - added because u was starting supersonic
+    u_H3_plus[0,0]= pw.T2v(T_H3_plus[0,0],m_H3_plus)#*0.1
+    u_H3_plus[1,0]= pw.T2v(T_H3_plus[1,0],m_H3_plus)#*0.1
+    u_H3_plus[-1,0]= pw.T2v(T_H3_plus[-1,0],m_H3_plus)#*0.1
+    u_H3_plus[-2,0]= pw.T2v(T_H3_plus[-2,0],m_H3_plus)#*0.1
     
-    # ----------ION NUMBER DENSITY-------------
+    # ----------ION DENSITY-------------
     
     # density uses formula for scale height n = n0exp(-z/H), where H = kT/mg
     # here we try to n0*exp(-z/(H_scale*(mass ratio*b_temp/background T)))
-    if dens == 'scales': 
-        # scale height for H+
-        H_plus_scale = ((k_b*b_temp)/(m_H_plus*g))
-        # floor validated by Constable Vlasov simulations
-        n_H_plus_floor = 6*10**4 #7
-        # initial H+ ion density defined by scale height
-        n_H_plus[2:-2,0] = n_den_H_plus*np.exp(-(z-z[0])/H_plus_scale) + n_H_plus_floor
-        n_H_plus[0:2,0] = n_den_H_plus*np.exp(-(gb_z-z[0])/H_plus_scale) +  n_H_plus_floor
-        n_H_plus[-2:,0] =  n_H_plus_floor #n_den_H_plus*np.exp(ge_z/H_plus_scale) +
-        # scale height for H3+
-        H3_plus_scale = ((k_b*b_temp)/(m_H3_plus*g))
-        # minimum (floor) for H3+
-        n_H3_plus_floor = 10**5 #8
-        # initial H3+ ion density defined by scale height
-        n_H3_plus[2:-2,0] = n_den_H3_plus*np.exp(-(z-z[0])/H3_plus_scale) + n_H3_plus_floor
-        n_H3_plus[0:2,0] = n_den_H3_plus*np.exp(-(gb_z-z[0])/H3_plus_scale) +  n_H3_plus_floor
-        n_H3_plus[-2:,0] = n_H3_plus_floor #n_den_H3_plus*np.exp(ge_z/H3_plus_scale) +
-        
-    elif dens == 'carley':
-        # carley number densities - H+ w/ minimum floor imposed
-        n_H_plus[2:-2,0] = 2*10**9*np.exp(-0.5*(z/z[0])) + 6*10**7
-        n_H_plus[0:2,0]=2*10**9*np.exp(-0.5*(gb_z/z[0])) + 6*10**7
-        n_H_plus[-2:,0]=2*10**9*np.exp(-0.5*(ge_z/z[0])) + 6*10**7
-        # carley number densities - H3+ w/ minimum floor imposed
-        n_H3_plus[2:-2,0] = 1*10**10*np.exp(-0.4*(z/z[0])) + 10**8
-        n_H3_plus[0:2,0]=1*10**10*np.exp(-0.4*(gb_z/z[0])) + 10**8
-        n_H3_plus[-2:,0]=1*10**10*np.exp(-0.4*(ge_z/z[0])) + 10**8
-    else:
-        print('Invalid selection for Number Density function')
-        # old number densities
-        # #H_scale = 2*z[0]
-        # n_H_plus[2:-2,0] = n_den_H_plus*np.exp(-(z/(H_scale*((m_H_plus/m_H_plus)*(b_temp/3000))))) + n_H_plus_floor #2*10**9 (subauroral, run 1) #1*10**10 (auroral), #5*10**8 (nonauroral)
-        # n_H_plus[0:2,0] =n_den_H_plus*np.exp(-(gb_z/(H_scale*((m_H_plus/m_H_plus)*(b_temp/3000))))) + n_H_plus_floor
-        # n_H_plus[-2:,0]=n_den_H_plus*np.exp(-(ge_z/(H_scale*((m_H_plus/m_H_plus)*(b_temp/3000)))))+ n_H_plus_floor
-        # old number densities
-        # n_H3_plus[2:-2,0] = n_den_H3_plus*np.exp(-(z/(H_scale*((m_H_plus/m_H3_plus)*(b_temp/3000))))) + n_H3_plus_floor #1*10**10 (subauroral, run 1) #5*10**10 (auroral) #1*10**9 (nonauroral)
-        # n_H3_plus[0:2,0]=n_den_H3_plus*np.exp(-(gb_z/(H_scale*((m_H_plus/m_H3_plus)*(b_temp/3000))))) + n_H3_plus_floor
-        # n_H3_plus[-2:,0]=n_den_H3_plus*np.exp(-(ge_z/(H_scale*((m_H_plus/m_H3_plus)*(b_temp/3000))))) + n_H3_plus_floor
+    # where H_scale represents? double the value of the initial grid position? do I need to rewrite this?
+    # n0*exp(-(z/((k_b*1000)/(m_H_plus*G)))?
+  
+
+   
+    # initial H+ ion density defined by scale height
     
-    # ----------ION MASS DENSITY-------------
+    # # carley number densities
+    # n_H_plus[2:-2,0] = 2*10**9*np.exp(-0.5*(z/z[0])) + 6*10**7
+    # n_H_plus[0:2,0]=2*10**9*np.exp(-0.5*(gb_z/z[0])) + 6*10**7
+    # n_H_plus[-2:,0]=2*10**9*np.exp(-0.5*(ge_z/z[0])) + 6*10**7
+    
+    # #H_scale = 2*z[0]
+    H_plus_scale = ((k_b*b_temp)/(m_H_plus*g))
+    # floor validated by Constable Vlasov simulations
+    n_H_plus_floor = 6*10**4 #7
+    
+    # new number densities
+    n_H_plus[2:-2,0] = n_den_H_plus*np.exp(-(z-z[0])/H_plus_scale) + n_H_plus_floor
+    n_H_plus[0:2,0] = n_den_H_plus*np.exp(-(gb_z-z[0])/H_plus_scale) +  n_H_plus_floor
+    n_H_plus[-2:,0] =  n_H_plus_floor #n_den_H_plus*np.exp(ge_z/H_plus_scale) +
+    
+    # old number densities
+    # n_H_plus[2:-2,0] = n_den_H_plus*np.exp(-(z/(H_scale*((m_H_plus/m_H_plus)*(b_temp/3000))))) + n_H_plus_floor #2*10**9 (subauroral, run 1) #1*10**10 (auroral), #5*10**8 (nonauroral)
+    # n_H_plus[0:2,0] =n_den_H_plus*np.exp(-(gb_z/(H_scale*((m_H_plus/m_H_plus)*(b_temp/3000))))) + n_H_plus_floor
+    # n_H_plus[-2:,0]=n_den_H_plus*np.exp(-(ge_z/(H_scale*((m_H_plus/m_H_plus)*(b_temp/3000)))))+ n_H_plus_floor
     # mass density
     rho_H_plus[2:-2,0] = n_H_plus[2:-2,0] * m_H_plus 
     rho_H_plus[0:2,0]=n_H_plus[0:2,0] * m_H_plus
     rho_H_plus[-2:,0]=n_H_plus[-2:,0] * m_H_plus
 
+    #initial H3+ ion density defined by scale height
+    
+    # # carley number densities
+    # n_H3_plus[2:-2,0] = 1*10**10*np.exp(-0.4*(z/z[0])) + 10**8
+    # n_H3_plus[0:2,0]=1*10**10*np.exp(-0.4*(gb_z/z[0])) + 10**8
+    # n_H3_plus[-2:,0]=1*10**10*np.exp(-0.4*(ge_z/z[0])) + 10**8
+    
+    H3_plus_scale = ((k_b*b_temp)/(m_H3_plus*g))
+    n_H3_plus_floor = 10**5 #8
+    
+    # new number densities
+    n_H3_plus[2:-2,0] = n_den_H3_plus*np.exp(-(z-z[0])/H3_plus_scale) + n_H3_plus_floor
+    n_H3_plus[0:2,0] = n_den_H3_plus*np.exp(-(gb_z-z[0])/H3_plus_scale) +  n_H3_plus_floor
+    n_H3_plus[-2:,0] = n_H3_plus_floor #n_den_H3_plus*np.exp(ge_z/H3_plus_scale) +
+    
+    
+    # old number densities
+    # n_H3_plus[2:-2,0] = n_den_H3_plus*np.exp(-(z/(H_scale*((m_H_plus/m_H3_plus)*(b_temp/3000))))) + n_H3_plus_floor #1*10**10 (subauroral, run 1) #5*10**10 (auroral) #1*10**9 (nonauroral)
+    # n_H3_plus[0:2,0]=n_den_H3_plus*np.exp(-(gb_z/(H_scale*((m_H_plus/m_H3_plus)*(b_temp/3000))))) + n_H3_plus_floor
+    # n_H3_plus[-2:,0]=n_den_H3_plus*np.exp(-(ge_z/(H_scale*((m_H_plus/m_H3_plus)*(b_temp/3000))))) + n_H3_plus_floor
     # mass density
     rho_H3_plus[2:-2,0] = n_H3_plus[2:-2,0] * m_H3_plus
     rho_H3_plus[0:2,0]=n_H3_plus[0:2,0] * m_H3_plus
@@ -532,68 +536,67 @@ def jupiter(its,phys_consts,z,z_ext,x,ghosts,b_temp,j,n_den_H_plus,n_den_H3_plus
     u_e[0:2,0]=(1/n_e[0:2,0]) * (n_H3_plus[0:2,0] * u_H3_plus[0:2,0] + n_H_plus[0:2,0]*u_H_plus[0:2,0] - FAC[0:2]/e_charge)
     u_e[-2:,0]=(1/n_e[-2:,0]) * (n_H3_plus[-2:,0] * u_H3_plus[-2:,0] + n_H_plus[-2:,0]*u_H_plus[-2:,0] - FAC[-2:]/e_charge)
       
-    # ----------NEUTRAL ION DENSITY-------------
+    # ----------NEUTRAL DENSITY-------------
     # initial neutral H2 density - CONSTANT
-    if dens == 'scales':
-         # initial neutral H2 density - CONSTANT
-         H2_scale = ((k_b*b_temp)/(m_H2*g))
-         n_H2[2:-2] = 10e16*np.exp(-(z-z[0])/H2_scale) + 1000000
-         n_H2[0:2] =  10e16*np.exp(-(gb_z-z[0])/H2_scale) +  1000000
-         n_H2[-2:] =  1000000 #10e16*np.exp(ge_z/H2_scale) +  
-         # initial neutral H density - CONSTANT
-         H_scale = ((k_b*b_temp)/(m_H*g))
-         n_H[2:-2] = 10e15*np.exp(-(z-z[0])/H_scale) + 1000000
-         n_H[0:2] =  10e15*np.exp(-(gb_z-z[0])/H_scale) +  1000000
-         n_H[-2:] =  1000000  #10e15*np.exp(ge_z/H_scale) +
-         #initial neutral He density - CONSTANT
-         He_scale = ((k_b*b_temp)/(m_He*g))
-         n_He[2:-2] = 10e14*np.exp(-(z-z[0])/He_scale) + 1000000
-         n_He[0:2] =  10e14*np.exp(-(gb_z-z[0])/He_scale) +  1000000
-         n_He[-2:] =  1000000 #10e14*np.exp(ge_z/He_scale) + 
-         
-    elif dens == 'carley':
-        # carley number densities - initial neutral H2 density - CONSTANT
-        n_H2[2:-2] = (10**10)*10**6*np.exp(-0.3*(z/z[0])) + 1000000
-        n_H2[0:2]=(10**10)*10**6*np.exp(-0.3*(gb_z/z[0])) + 1000000
-        n_H2[-2:]=(10**10)*10**6*np.exp(-0.3*(ge_z/z[0])) + 1000000
-        
-        # carley number densities - initial neutral H density - CONSTANT
-        n_H[2:-2] = (10**9)*10**6*np.exp(-0.3*(z/z[0])) + 100000
-        n_H[0:2]=(10**9)*10**6*np.exp(-0.3*(gb_z/z[0])) + 100000
-        n_H[-2:]=(10**9)*10**6*np.exp(-0.3*(ge_z/z[0])) + 100000
     
-        # carley number densities - initial neutral He density - CONSTANT
-        n_He[2:-2] = 10**8*10**6*np.exp(-0.5*(z/z[0])) + 1000000
-        n_He[0:2]=10**8*10**6*np.exp(-0.5*(gb_z/z[0])) + 1000000
-        n_He[-2:]=10**8*10**6*np.exp(-0.5*(ge_z/z[0])) + 1000000
-        
-    else:
-        print('Invalid selection for Number Density function')
-
-        # old number densities
-        # n_H2[2:-2] = 10e16 *np.exp(-(z/(H_scale*((m_H_plus/m_H2)*(b_temp/3000))))) + 1000000
-        # n_H2[0:2]=10e16*np.exp(-(gb_z/(H_scale*((m_H_plus/m_H2)*(b_temp/3000))))) + 1000000
-        # n_H2[-2:]=10e16*np.exp(-(ge_z/(H_scale*((m_H_plus/m_H2)*(b_temp/3000))))) + 1000000 
-        # old number densities
-        # n_H[2:-2] = 10e15*np.exp(-(z/(H_scale*((m_H_plus/m_H)*(b_temp/3000))))) + 1000000
-        # n_H[0:2]=10e15*np.exp(-(gb_z/(H_scale*((m_H_plus/m_H)*(b_temp/3000))))) + 1000000
-        # n_H[-2:]=10e15*np.exp(-(ge_z/(H_scale*((m_H_plus/m_H)*(b_temp/3000))))) + 1000000
-        #old number densities
-        # n_He[2:-2] = 10e14*np.exp(-(z/(H_scale*((m_H_plus/m_He)*(b_temp/3000))))) + 1000000 
-        # n_He[0:2]=10e14*np.exp(-(gb_z/(H_scale*((m_H_plus/m_He)*(b_temp/3000))))) + 1000000
-        # n_He[-2:]=10e14*np.exp(-(ge_z/(H_scale*((m_H_plus/m_He)*(b_temp/3000))))) + 1000000
-        
-    # ----------NEUTRAL MASS DENSITY-------------
+    # # carley number densities
+    # n_H2[2:-2] = (10**10)*10**6*np.exp(-0.3*(z/z[0])) + 1000000
+    # n_H2[0:2]=(10**10)*10**6*np.exp(-0.3*(gb_z/z[0])) + 1000000
+    # n_H2[-2:]=(10**10)*10**6*np.exp(-0.3*(ge_z/z[0])) + 1000000
+    
+    # new number densities
+    H2_scale = ((k_b*b_temp)/(m_H2*g))
+    n_H2[2:-2] = 10e16*np.exp(-(z-z[0])/H2_scale) + 1000000
+    n_H2[0:2] =  10e16*np.exp(-(gb_z-z[0])/H2_scale) +  1000000
+    n_H2[-2:] =  1000000 #10e16*np.exp(ge_z/H2_scale) +  
+    
+    # old number densities
+    # n_H2[2:-2] = 10e16 *np.exp(-(z/(H_scale*((m_H_plus/m_H2)*(b_temp/3000))))) + 1000000
+    # n_H2[0:2]=10e16*np.exp(-(gb_z/(H_scale*((m_H_plus/m_H2)*(b_temp/3000))))) + 1000000
+    # n_H2[-2:]=10e16*np.exp(-(ge_z/(H_scale*((m_H_plus/m_H2)*(b_temp/3000))))) + 1000000
     # mass density
     rho_H2[2:-2] = n_H2[2:-2] * m_H2
     rho_H2[0:2]=n_H2[0:2] * m_H2
-    rho_H2[-2:]=n_H2[-2:] * m_H2 
-   
+    rho_H2[-2:]=n_H2[-2:] * m_H2
+    
+    # initial neutral H density - CONSTANT
+    # # carley number densities
+    # n_H[2:-2] = (10**9)*10**6*np.exp(-0.3*(z/z[0])) + 100000
+    # n_H[0:2]=(10**9)*10**6*np.exp(-0.3*(gb_z/z[0])) + 100000
+    # n_H[-2:]=(10**9)*10**6*np.exp(-0.3*(ge_z/z[0])) + 100000
+    
+    # # new number densities
+    H_scale = ((k_b*b_temp)/(m_H*g))
+    n_H[2:-2] = 10e15*np.exp(-(z-z[0])/H_scale) + 1000000
+    n_H[0:2] =  10e15*np.exp(-(gb_z-z[0])/H_scale) +  1000000
+    n_H[-2:] =  1000000  #10e15*np.exp(ge_z/H_scale) +
+    
+    # old number densities
+    # n_H[2:-2] = 10e15*np.exp(-(z/(H_scale*((m_H_plus/m_H)*(b_temp/3000))))) + 1000000
+    # n_H[0:2]=10e15*np.exp(-(gb_z/(H_scale*((m_H_plus/m_H)*(b_temp/3000))))) + 1000000
+    # n_H[-2:]=10e15*np.exp(-(ge_z/(H_scale*((m_H_plus/m_H)*(b_temp/3000))))) + 1000000
     # mass density
     rho_H[2:-2] = n_H[2:-2] * m_H
     rho_H[0:2]=n_H[0:2] * m_H
     rho_H[-2:]=n_H[-2:] * m_H
    
+    #initial neutral He density - CONSTANT
+    
+    # # carley number densities
+    # n_He[2:-2] = 10**8*10**6*np.exp(-0.5*(z/z[0])) + 1000000
+    # n_He[0:2]=10**8*10**6*np.exp(-0.5*(gb_z/z[0])) + 1000000
+    # n_He[-2:]=10**8*10**6*np.exp(-0.5*(ge_z/z[0])) + 1000000
+    
+    # new number densities
+    He_scale = ((k_b*b_temp)/(m_He*g))
+    n_He[2:-2] = 10e14*np.exp(-(z-z[0])/He_scale) + 1000000
+    n_He[0:2] =  10e14*np.exp(-(gb_z-z[0])/He_scale) +  1000000
+    n_He[-2:] =  1000000 #10e14*np.exp(ge_z/He_scale) + 
+    
+    # old number densities
+    # n_He[2:-2] = 10e14*np.exp(-(z/(H_scale*((m_H_plus/m_He)*(b_temp/3000))))) + 1000000 
+    # n_He[0:2]=10e14*np.exp(-(gb_z/(H_scale*((m_H_plus/m_He)*(b_temp/3000))))) + 1000000
+    # n_He[-2:]=10e14*np.exp(-(ge_z/(H_scale*((m_H_plus/m_He)*(b_temp/3000))))) + 1000000
     # mass density
     rho_He[2:-2] = n_He[2:-2] * m_He
     rho_He[0:2]=n_He[0:2] * m_He
