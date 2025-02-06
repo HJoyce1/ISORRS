@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # load in npz file with data
-data = np.load('output_alliter_jupiter_test_0.1u_carley.npz')
+data = np.load('/Users/hannah/OneDrive - Lancaster University/ISORRS/2023/feb/output_alliter_jupiter_test_no_FAC.npz')
 
 # set up figure
 plt.figure(figsize=(10,20))
