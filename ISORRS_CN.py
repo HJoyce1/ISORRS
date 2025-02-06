@@ -15,7 +15,7 @@ def Crank_Nicolson(dz,nz,dt,nt,D,U):
     # create coefficient matrix:
     A = diags([-0.5*r, 1+r, -0.5*r], [-1, 0, 1], shape=(nz-2, nz-2)).toarray() 
     B1 = diags([0.5*r, 1-r, 0.5*r],[-1, 0, 1], shape=(nz-2, nz-2)).toarray()
-    #breakpoint()
+    
     #breakpoint()
     B = np.dot(U[1:-1],B1) #U[1:-1]
     B[0] = B[0]+0.5*r*(U0+U0)
