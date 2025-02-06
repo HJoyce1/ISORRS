@@ -1,5 +1,7 @@
 # IonoSpheric Outflow in Rapidly Rotating Systems (ISORRS) Model
 
+### NOTE: Latest Commits in 2025 due to wanting to ensure last edited work was uploaded to GitHub, as this project is no longer being worked on by H.S. Joyce. Last work on this model was in 2023.
+
 Repository for the development of the model <br>
 More scientfic information available in doi.org/10.1029/2019JA027728 and doi.org/10.1029/2019JA027727 <br>
 This README file is focused more on the construction of and how to run the model <br>
