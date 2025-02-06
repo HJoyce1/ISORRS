@@ -21,7 +21,7 @@ def plot_me_log(x,y,xlabel,ylabel):
     pl.xlabel(xlabel)
     # set y-scale as log
     pl.yscale('log')
-
+ 
 # results plot showing the ambipolar electric field, acceleration terms, ion flux, electron flux and total flux
 def results_plot(z,z_ext,radius,num_ion,e_charge,E,ion_dict,electron_dict,ac,ag,e_flux,ion_flux,ion_flux_tot):
     import matplotlib.pyplot as pl
@@ -50,7 +50,7 @@ def results_plot(z,z_ext,radius,num_ion,e_charge,E,ion_dict,electron_dict,ac,ag,
     ax2.set_xlim([0,z_ext[-1]/radius])
     # set ticks
     ax2.tick_params(direction='in')
-
+    
     # second plot, acceleration terms
     ax3 = pl.subplot(5,1,2)
     # plot H+ electric field vs grid
@@ -82,7 +82,7 @@ def results_plot(z,z_ext,radius,num_ion,e_charge,E,ion_dict,electron_dict,ac,ag,
     ax4.tick_params(direction='in')
     # add legend to visualise different lines
     ax3.legend(['$H^+$ Electric Field','$H_3^+$ Electric Field','Centrifugal', 'Gravitational'],loc='upper right',bbox_to_anchor=(0.99,0.98))
-
+            
     # third plot, electron flux
     ax5 = pl.subplot(5,1,3)
     # plot on log scale
@@ -119,7 +119,7 @@ def results_plot(z,z_ext,radius,num_ion,e_charge,E,ion_dict,electron_dict,ac,ag,
     pl.plot(z/1000,ion_flux[2:-2,-1,0],color='blue')
     # plot H3+ flux vs grid
     pl.plot(z/1000,ion_flux[2:-2,-1,1],color='lightskyblue')
-    # add label to y-scale
+    # add label to y-scale    
     pl.ylabel('d) Ion Flux \n $(m^{-2}$ $s^{-1})$ x A $(m^2)$')
     # set limit based on grid
     pl.xlim([0,z_ext[-1]/1000])
@@ -127,7 +127,7 @@ def results_plot(z,z_ext,radius,num_ion,e_charge,E,ion_dict,electron_dict,ac,ag,
     ax7.tick_params(direction='in',bottom=True, top=False, left=True, right=True)
     # set new axis on top of above axis
     ax8 = ax7.twiny()
-    # replot H+ flux vs now jupiter radii
+    # replot H+ flux vs now jupiter radii 
     ax8.plot(z/radius,ion_flux[2:-2,-1,0],color='blue')
     # set limits based on jupiter radii
     ax8.set_xlim([0,z_ext[-1]/radius])
@@ -138,9 +138,9 @@ def results_plot(z,z_ext,radius,num_ion,e_charge,E,ion_dict,electron_dict,ac,ag,
     ax7.xaxis.set_ticklabels([])
     # set ticks for top axes
     ax8.tick_params(direction='in')
-    # set legend
+    # set legend 
     ax7.legend(['$H^+$','$H_3^+$'],loc='upper right',bbox_to_anchor=(0.99,0.95))
-
+    
     # fifth plot, total ion flux
     ax9 = pl.subplot(5,1,5)
     # plot using log scale
@@ -150,7 +150,7 @@ def results_plot(z,z_ext,radius,num_ion,e_charge,E,ion_dict,electron_dict,ac,ag,
     # plot H+ flux vs grid
     pl.plot(z/1000,ion_flux[2:-2,-1,0],color='blue')
     # plot H3+ flux vs grid
-    pl.plot(z/1000,ion_flux[2:-2,-1,1],color='lightskyblue')
+    pl.plot(z/1000,ion_flux[2:-2,-1,1],color='lightskyblue')  
     # plot H+ and H3+ combined flux vs grid
     pl.plot(z/1000,ion_flux_tot[2:-2,-1],color='black')
     # add y label
@@ -198,7 +198,7 @@ def species_plot(z,z_ext,ion_dict,radius):
     ax2.plot(z/radius,ion_dict["n"][2:-2,-1])
     ax2.set_xlabel('Distance Along Field Line \n (Planetary Radii)')
     ax2.set_xlim([0,z_ext[-1]/radius])
-
+    
     # plot for velocity
     ax3 =pl.subplot(2,2,2)
     # plot vs grid
@@ -225,7 +225,7 @@ def species_plot(z,z_ext,ion_dict,radius):
     ax7.set_xlabel('Distance Along Field Line \n (Planetary Radii)')
     ax7.set_xlim([0,z_ext[-1]/radius])
     pl.yscale('log')
-
+    
     # plot for temperature
     ax5=pl.subplot(2,2,4)
     # plot vs grid
@@ -238,18 +238,18 @@ def species_plot(z,z_ext,ion_dict,radius):
     ax8.plot(z/radius,ion_dict["T"][2:-2,-1])
     ax8.set_xlabel('Distance Along Field Line \n (Planetary Radii)')
     ax8.set_xlim([0,z_ext[-1]/radius])
-
+ 
     # add title and adjust for stacking
     pl.suptitle(ion_dict["name"])
-    pl.subplots_adjust(wspace=0.5, hspace=0.5)
-
-
-# plots of the input data
+    pl.subplots_adjust(wspace=0.5, hspace=0.5)  
+    
+    
+# plots of the input data  
 def input_plot(ions,electrons,neutrals,z,z_ext,A,radius):
     import matplotlib.pyplot as pl
     # create figure
     fig = pl.figure(figsize=(8,10))
-
+    
     #plot for cross sectional area
     ax1 = fig.add_subplot(4,2,1)
     # plot vs grid
@@ -269,7 +269,7 @@ def input_plot(ions,electrons,neutrals,z,z_ext,A,radius):
     # plot for velocity
     ax3 = fig.add_subplot(4,2,2)
     # H+ velocity vs grid
-    ax3.plot(z/1000,ions[1]["u"][2:-2,0],color='blue')
+    ax3.plot(z/1000,ions[1]["u"][2:-2,0],color='blue') 
     # H3+ velocity vs grid
     ax3.plot(z/1000,ions[2]["u"][2:-2,0],color='lightskyblue')
     # electron velocity vs grid
@@ -284,16 +284,16 @@ def input_plot(ions,electrons,neutrals,z,z_ext,A,radius):
     # replot electron velocity so twinned axes 'have data'
     ax4.plot(z/1000,electrons["u"][2:-2,0],color='orange')
     ax4.set_xlabel('Distance Along Field Line \n (Planetary Radii)')
-    ax4.set_xlim([0,z_ext[-1]/radius])
+    ax4.set_xlim([0,z_ext[-1]/radius]) 
     # add legend
     ax3.legend(['$H^+$','$H_3^+$','$e^-$'],loc='upper right',bbox_to_anchor=(0.99,0.95))
-
+    
     # plot for number density
     ax5 = fig.add_subplot(4,2,3)
     # H+ vs grid
-    ax5.plot(z/1000,ions[1]["n"][2:-2,0],color='blue')
+    ax5.plot(z/1000,ions[1]["n"][2:-2,0],color='blue')  
     # H3+ vs grid
-    ax5.plot(z/1000,ions[2]["n"][2:-2,0],color='lightskyblue')
+    ax5.plot(z/1000,ions[2]["n"][2:-2,0],color='lightskyblue') 
     # electrons vs grid
     ax5.plot(z/1000,electrons["n"][2:-2,0],color='orange')
     # neutrals
@@ -311,29 +311,29 @@ def input_plot(ions,electrons,neutrals,z,z_ext,A,radius):
     # twinned axes for RJ
     ax6=ax5.twiny()
     # plot for twinned axes
-    ax6.plot(z/radius,ions[1]["n"][2:-2,0],color='blue')
+    ax6.plot(z/radius,ions[1]["n"][2:-2,0],color='blue') 
     ax6.set_xlim([0,z_ext[-1]/radius])
     ax6.xaxis.set_ticklabels([])
     ax6.tick_params(direction='in')
     pl.yscale('log')
     # add legend
     ax5.legend(['$H^+$','$H_3^+$','$e^-$','$H_2$','He','H'],loc='upper right',bbox_to_anchor=(0.99,0.95))
-
+    
     # plot for mass density
     ax7 = pl.subplot(4,2,4)
     # H+ vs grid
-    ax7.plot(z/1000,ions[1]["rho"][2:-2,0],color='blue')
+    ax7.plot(z/1000,ions[1]["rho"][2:-2,0],color='blue') 
     # H3+ vs grid
     ax7.plot(z/1000,ions[2]["rho"][2:-2,0],color='lightskyblue')
     # electrons vs grid
     ax7.plot(z/1000,electrons["rho"][2:-2,0],color='orange')
     # neutrals
     # H2 vs grid
-    ax7.plot(z/1000,neutrals[1]["rho"][2:-2],color='maroon')
+    ax7.plot(z/1000,neutrals[1]["rho"][2:-2],color='maroon') 
     # He vs grid
-    ax7.plot(z/1000,neutrals[2]["rho"][2:-2],color='red')
-    # H vs grid
-    ax7.plot(z/1000,neutrals[3]["rho"][2:-2],color='salmon')
+    ax7.plot(z/1000,neutrals[2]["rho"][2:-2],color='red') 
+    # H vs grid 
+    ax7.plot(z/1000,neutrals[3]["rho"][2:-2],color='salmon') 
     ax7.set_ylabel('Initial Mass \n Density $(m^{-3})$')
     ax7.tick_params(direction='in',bottom=True, top=False, left=True, right=True)
     ax7.set_xlabel([])
@@ -341,14 +341,14 @@ def input_plot(ions,electrons,neutrals,z,z_ext,A,radius):
     ax7.set_xlim([0,z_ext[-1]/1000])
     # twin axes so can show RJ
     ax8 = ax7.twiny()
-    ax8.plot(z/radius,ions[1]["rho"][2:-2,0],color='blue')
+    ax8.plot(z/radius,ions[1]["rho"][2:-2,0],color='blue') 
     ax8.set_xlim([0,z_ext[-1]/radius])
     ax8.xaxis.set_ticklabels([])
     ax8.tick_params(direction='in')
     pl.yscale('log')
     # legend
     ax7.legend(['$H^+$','$H_3^+$','$e^-$','$H_2$','He','H'],loc='upper right',bbox_to_anchor=(0.99,0.95))
-
+    
     # plot for mass prodeuction rate
     ax9 = pl.subplot(4,2,5)
     # H+ vs grid
@@ -356,7 +356,7 @@ def input_plot(ions,electrons,neutrals,z,z_ext,A,radius):
     # H3+ vs grid
     ax9.plot(z/1000,ions[2]["S"][2:-2],color='lightskyblue')
     # electrons vs grid
-    ax9.plot(z/1000,electrons["S"][2:-2],color='orange')
+    ax9.plot(z/1000,electrons["S"][2:-2],color='orange')    
     ax9.set_ylabel('Mass Production Rate \n $(kg m^{-3} s^{-1})$')
     ax9.tick_params(direction='in',bottom=True, top=False, left=True, right=True)
     pl.xlabel([])
@@ -371,7 +371,7 @@ def input_plot(ions,electrons,neutrals,z,z_ext,A,radius):
     pl.yscale('log')
     # legend
     ax9.legend(['$H^+$','$H_3^+$','$e^-$'],loc='upper right',bbox_to_anchor=(0.99,0.95))
-
+    
     # plot for temperature
     ax11=pl.subplot(4,2,6)
     # H+ vs grid
@@ -395,7 +395,7 @@ def input_plot(ions,electrons,neutrals,z,z_ext,A,radius):
     ax12.xaxis.set_ticklabels([])
     # legend
     ax11.legend(['$H^+$','$H_3^+$','$e^-$','Neutrals'],loc='upper right',bbox_to_anchor=(0.99,0.95))
-
+    
     # plot for pressure
     ax13=pl.subplot(4,2,7)
     # H+ vs grid
@@ -417,9 +417,9 @@ def input_plot(ions,electrons,neutrals,z,z_ext,A,radius):
     ax14.set_xlim([0,z_ext[-1]/radius])
     ax14.xaxis.set_ticklabels([])
     ax14.tick_params(direction='in')
-    # legend
+    # legend  
     ax13.legend(['$H^+$','$H_3^+$','$e^-$','Neutrals'],loc='upper right',bbox_to_anchor=(0.99,0.95))
-
+    
     # plot for heat conductivity
     ax15=pl.subplot(4,2,8)
     # H+ vs grid
@@ -440,15 +440,15 @@ def input_plot(ions,electrons,neutrals,z,z_ext,A,radius):
     ax16.tick_params(direction='in')
     # legend
     ax15.legend(['$H^+$','$H_3^+$','$e^-$'],loc='upper right',bbox_to_anchor=(0.99,0.95))
-
+    
     # add title and adjust for stacking
-    pl.subplots_adjust(wspace=0.5, hspace=0.0)
-    pl.suptitle("Input")
-
+    pl.subplots_adjust(wspace=0.5, hspace=0.0)  
+    pl.suptitle("Input")  
+ 
 # plots of the input variables after they have been interated through (outputs)
 def output_plots(ions,electrons,neutrals,z,z_ext,A,radius):
     import matplotlib.pyplot as pl
-
+    
     # plot for cross sectional area
     fig = pl.figure(figsize=(8,10))
     ax1 = fig.add_subplot(4,2,1)
@@ -469,7 +469,7 @@ def output_plots(ions,electrons,neutrals,z,z_ext,A,radius):
     # plot for velocity
     ax3 = fig.add_subplot(4,2,2)
     # H+ vs grid
-    ax3.plot(z/1000,ions[1]["u"][2:-2,-1],color='blue')
+    ax3.plot(z/1000,ions[1]["u"][2:-2,-1],color='blue') 
     # H3+ vs grid
     ax3.plot(z/1000,ions[2]["u"][2:-2,-1],color='lightskyblue')
     # electrons vs grid
@@ -483,16 +483,16 @@ def output_plots(ions,electrons,neutrals,z,z_ext,A,radius):
     ax4 = ax3.twiny()
     ax4.plot(z/1000,electrons["u"][2:-2,-1],color='orange')
     ax4.set_xlabel('Distance Along Field Line \n (Planetary Radii)')
-    ax4.set_xlim([0,z_ext[-1]/radius])
+    ax4.set_xlim([0,z_ext[-1]/radius]) 
     # legend
     ax3.legend(['$H^+$','$H_3^+$','$e^-$'],loc='upper right',bbox_to_anchor=(0.99,0.95))
-
+    
     # plot for number density
     ax5 = fig.add_subplot(4,2,3)
     # H+ vs grid
-    ax5.plot(z/1000,ions[1]["n"][2:-2,-1],color='blue')
+    ax5.plot(z/1000,ions[1]["n"][2:-2,-1],color='blue')    
     # H3+ vs grid
-    ax5.plot(z/1000,ions[2]["n"][2:-2,-1],color='lightskyblue')
+    ax5.plot(z/1000,ions[2]["n"][2:-2,-1],color='lightskyblue') 
     # electrons vs grid
     ax5.plot(z/1000,electrons["n"][2:-2,-1],color='orange')
     # neutrals
@@ -509,29 +509,29 @@ def output_plots(ions,electrons,neutrals,z,z_ext,A,radius):
     ax5.set_xlim([0,z_ext[-1]/1000])
     # twinned axes for RJ
     ax6=ax5.twiny()
-    ax6.plot(z/radius,ions[1]["n"][2:-2,-1],color='blue')
+    ax6.plot(z/radius,ions[1]["n"][2:-2,-1],color='blue') 
     ax6.set_xlim([0,z_ext[-1]/radius])
     ax6.xaxis.set_ticklabels([])
     ax6.tick_params(direction='in')
     pl.yscale('log')
     # legend
     ax5.legend(['$H^+$','$H_3^+$','$e^-$','$H_2$','He','H'],loc='upper right',bbox_to_anchor=(0.99,0.95))
-
+    
     # plot for mass density
     ax7 = pl.subplot(4,2,4)
     # H+ vs grid
-    ax7.plot(z/1000,ions[1]["rho"][2:-2,-1],color='blue')
+    ax7.plot(z/1000,ions[1]["rho"][2:-2,-1],color='blue') 
     # H3+ vs grid
     ax7.plot(z/1000,ions[2]["rho"][2:-2,-1],color='lightskyblue')
     # electrons vs grid
     ax7.plot(z/1000,electrons["rho"][2:-2,-1],color='orange')
     # neutrals
     # H2 vs grid
-    ax7.plot(z/1000,neutrals[1]["rho"][2:-2],color='maroon')
+    ax7.plot(z/1000,neutrals[1]["rho"][2:-2],color='maroon') 
     # He vs grid
-    ax7.plot(z/1000,neutrals[2]["rho"][2:-2],color='red')
+    ax7.plot(z/1000,neutrals[2]["rho"][2:-2],color='red') 
     # H vs grid
-    ax7.plot(z/1000,neutrals[3]["rho"][2:-2],color='salmon')
+    ax7.plot(z/1000,neutrals[3]["rho"][2:-2],color='salmon') 
     ax7.set_ylabel('Initial Mass \n Density $(m^{-3})$')
     ax7.tick_params(direction='in',bottom=True, top=False, left=True, right=True)
     ax7.set_xlabel([])
@@ -539,14 +539,14 @@ def output_plots(ions,electrons,neutrals,z,z_ext,A,radius):
     ax7.set_xlim([0,z_ext[-1]/1000])
     # twinned axes for RJ
     ax8 = ax7.twiny()
-    ax8.plot(z/radius,ions[1]["rho"][2:-2,-1],color='blue')
+    ax8.plot(z/radius,ions[1]["rho"][2:-2,-1],color='blue') 
     ax8.set_xlim([0,z_ext[-1]/radius])
     ax8.xaxis.set_ticklabels([])
     ax8.tick_params(direction='in')
     pl.yscale('log')
     # legend
     ax7.legend(['$H^+$','$H_3^+$','$e^-$','$H_2$','He','H'],loc='upper right',bbox_to_anchor=(0.99,0.95))
-
+    
     # plot for mass production rate
     ax9 = pl.subplot(4,2,5)
     # H+ vs grid
@@ -554,7 +554,7 @@ def output_plots(ions,electrons,neutrals,z,z_ext,A,radius):
     # H3+ vs grid
     ax9.plot(z/1000,ions[2]["S"][2:-2],color='lightskyblue')
     # electrons vs grid
-    ax9.plot(z/1000,electrons["S"][2:-2],color='orange')
+    ax9.plot(z/1000,electrons["S"][2:-2],color='orange')    
     ax9.set_ylabel('Mass Production Rate \n $(kg m^{-3} s^{-1})$')
     ax9.tick_params(direction='in',bottom=True, top=False, left=True, right=True)
     pl.xlabel([])
@@ -569,7 +569,7 @@ def output_plots(ions,electrons,neutrals,z,z_ext,A,radius):
     pl.yscale('log')
     # legend
     ax9.legend(['$H^+$','$H_3^+$','$e^-$'],loc='upper right',bbox_to_anchor=(0.99,0.95))
-
+    
     # plot for temperature
     ax11=pl.subplot(4,2,6)
     # H+ vs grid
@@ -593,7 +593,7 @@ def output_plots(ions,electrons,neutrals,z,z_ext,A,radius):
     ax12.xaxis.set_ticklabels([])
     # legend
     ax11.legend(['$H^+$','$H_3^+$','$e^-$','$H_2$','He','H'],loc='upper right',bbox_to_anchor=(0.99,0.95))
-
+    
     # plot for pressure
     ax13=pl.subplot(4,2,7)
     # H+ vs grid
@@ -617,7 +617,7 @@ def output_plots(ions,electrons,neutrals,z,z_ext,A,radius):
     ax14.tick_params(direction='in')
     # legend
     ax13.legend(['$H^+$','$H_3^+$','$e^-$','$H_2$','He','H'],loc='upper right',bbox_to_anchor=(0.99,0.95))
-
+    
     # plot for heat conductvity
     ax15=pl.subplot(4,2,8)
     # H+ vs grid
@@ -638,9 +638,9 @@ def output_plots(ions,electrons,neutrals,z,z_ext,A,radius):
     ax16.tick_params(direction='in')
     # legend
     ax15.legend(['$H^+$','$H_3^+$','$e^-$'],loc='upper right',bbox_to_anchor=(0.99,0.95))
-
+    
     # add title and adjust for plot stacking
-    pl.subplots_adjust(wspace=0.5, hspace=0.0)
+    pl.subplots_adjust(wspace=0.5, hspace=0.0)  
     pl.suptitle("Output")
 
 # function template for plotting
